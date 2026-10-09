@@ -426,9 +426,9 @@ class BagRandomizer {
         // Elements only in Sandtrix mode
         if (this.enableElements && !this.isTroll) {
             const roll = Math.random();
-            if (roll < 0.08) return MATERIAL_WATER; // ~8% Water piece
-            if (roll < 0.14) return MATERIAL_ACID;  // ~6% Acid piece
-            if (roll < 0.17) return MATERIAL_BOMB;  // ~3% TNT Bomb piece
+            if (roll < 0.025) return MATERIAL_WATER; // ~2.5% Water piece
+            if (roll < 0.045) return MATERIAL_ACID;  // ~2.0% Acid piece
+            if (roll < 0.065) return MATERIAL_BOMB;  // ~2.0% TNT Bomb piece
         }
         if (this.isTroll && Math.random() < 0.08) {
             return MATERIAL_BOMB; // Bomb block in Troll mode!
@@ -861,9 +861,9 @@ class SandEngine {
 
                         if (dlOk || drOk) {
                             // Sand Viscosity & Static Friction:
-                            // Resting sand has internal cohesion and resistance, forming taller heaps that take longer to spread.
+                            // Resting sand has internal cohesion and friction, forming steeper ~40-degree dunes.
                             // Tilting the phone generates lateral momentum that triggers active avalanches.
-                            const slideChance = strongTilt ? 0.90 : (preferLeft || preferRight ? 0.65 : 0.38);
+                            const slideChance = strongTilt ? 0.80 : (preferLeft || preferRight ? 0.45 : 0.08);
                             if (Math.random() < slideChance) {
                                 if (dlOk && drOk) {
                                     const nx = preferLeft ? (x - 1) : (preferRight ? (x + 1) : (Math.random() < 0.5 ? x - 1 : x + 1));
@@ -986,7 +986,7 @@ class SandEngine {
             this.score += gainedScore;
             this.updateHighScore();
 
-            const neededSandBands = (this.level - this.startLevel + 1) * 5;
+            const neededSandBands = (this.level - this.startLevel + 1) * 3;
             if (this.linesCleared >= neededSandBands && this.level < 10) {
                 this.level++;
             }
@@ -1144,9 +1144,9 @@ class SandEngine {
         // Gravity intervals
         const gravityIntervals = (this.mode === 'troll_classic')
             ? [500, 440, 380, 320, 260, 210, 160, 120, 90, 70]
-            : [45, 40, 35, 30, 25, 20, 16, 13, 10, 8];
+            : [26, 22, 18, 15, 12, 10, 8, 6, 5, 4];
 
-        const targetInterval = this.isSoftDropping ? 4 : gravityIntervals[Math.min(9, this.level - 1)];
+        const targetInterval = this.isSoftDropping ? 3 : gravityIntervals[Math.min(9, this.level - 1)];
 
         this.gravityTimer += dtMs;
         if (this.gravityTimer >= targetInterval) {
@@ -1156,7 +1156,7 @@ class SandEngine {
                 if (!this.activePiece.tryMove(0, dy, this.grid)) {
                     // Block landed
                     this.lockTimer += targetInterval;
-                    if (this.lockTimer >= 350 || this.isSoftDropping) {
+                    if (this.lockTimer >= 280 || this.isSoftDropping) {
                         const lockEvent = this.lockActivePiece();
                         Object.assign(tickResult, lockEvent);
                     }
