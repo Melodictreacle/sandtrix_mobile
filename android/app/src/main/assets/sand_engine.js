@@ -1144,26 +1144,38 @@ class SandEngine {
         // Gravity intervals
         const gravityIntervals = (this.mode === 'troll_classic')
             ? [500, 440, 380, 320, 260, 210, 160, 120, 90, 70]
-            : [26, 22, 18, 15, 12, 10, 8, 6, 5, 4];
+            : [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 
-        const targetInterval = this.isSoftDropping ? 3 : gravityIntervals[Math.min(9, this.level - 1)];
+        const targetInterval = this.isSoftDropping ? 2 : gravityIntervals[Math.min(9, this.level - 1)];
 
         this.gravityTimer += dtMs;
-        if (this.gravityTimer >= targetInterval) {
-            this.gravityTimer = 0;
+        const maxStepsPerFrame = (this.mode === 'troll_classic') ? 1 : 12;
+        let stepsTaken = 0;
+        const lockDelayMs = (this.mode === 'troll_classic') ? 450 : 80;
+
+        while (this.gravityTimer >= targetInterval && stepsTaken < maxStepsPerFrame) {
+            this.gravityTimer -= targetInterval;
+            stepsTaken++;
+
             if (this.activePiece) {
                 const dy = (this.mode === 'troll_classic') ? MINO_SIZE : 1;
                 if (!this.activePiece.tryMove(0, dy, this.grid)) {
-                    // Block landed
+                    // Block landed on floor or sand pile
                     this.lockTimer += targetInterval;
-                    if (this.lockTimer >= 280 || this.isSoftDropping) {
+                    if (this.lockTimer >= lockDelayMs || this.isSoftDropping) {
                         const lockEvent = this.lockActivePiece();
                         Object.assign(tickResult, lockEvent);
                     }
+                    break;
                 } else {
                     this.lockTimer = 0;
                 }
+            } else {
+                break;
             }
+        }
+        if (this.gravityTimer > targetInterval * 3) {
+            this.gravityTimer = 0;
         }
 
         // Physics Sub-steps (Sandtrix Mode)
