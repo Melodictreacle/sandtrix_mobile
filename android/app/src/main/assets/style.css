@@ -400,6 +400,13 @@ canvas#gameCanvas {
     color: #FFD4D9;
 }
 
+.touch-btn.paused-state {
+    background-color: #266B78;
+    border-color: var(--accent-teal);
+    color: #FFFFFF;
+    box-shadow: 0 0 10px rgba(72, 202, 228, 0.4);
+}
+
 /* When Gyroscope is Active, hide LEFT and RIGHT buttons */
 .controls-panel.gyro-active #btnLeft,
 .controls-panel.gyro-active #btnRight {

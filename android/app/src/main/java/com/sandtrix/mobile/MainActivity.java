@@ -11,7 +11,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -23,6 +25,18 @@ public class MainActivity extends Activity implements SensorEventListener {
     private Sensor rotationSensor;
     private Sensor accelerometer;
     private float[] rotationMatrix = new float[9];
+
+    public class AndroidAppBridge {
+        @JavascriptInterface
+        public void closeApp() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    finish();
+                }
+            });
+        }
+    }
     private float[] orientationAngles = new float[3];
     private long lastSensorUpdate = 0;
     private float lastRoll = 0;
@@ -64,6 +78,8 @@ public class MainActivity extends Activity implements SensorEventListener {
                 request.grant(request.getResources());
             }
         });
+
+        webView.addJavascriptInterface(new AndroidAppBridge(), "AndroidApp");
 
         // Initialize Native Hardware Gyroscope & Accelerometer
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -162,8 +178,15 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
+        if (webView != null) {
+            webView.evaluateJavascript("(function() { if (window.onNativeBackPress) { return window.onNativeBackPress(); } return 'close'; })()", new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                    if (value == null || "\"close\"".equals(value) || "'close'".equals(value) || "\"default\"".equals(value)) {
+                        finish();
+                    }
+                }
+            });
         } else {
             super.onBackPressed();
         }

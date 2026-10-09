@@ -202,6 +202,20 @@ class SandtrixApp {
 
         this.currentPage = 'menu';
 
+        // Native Hardware & Browser Back Button Bridge
+        window.onNativeBackPress = () => this.handleBackPress();
+        window.addEventListener('popstate', () => {
+            if (this.currentPage === 'game' && this.gameStarted && !this.engine.gameOver) {
+                if (!this.engine.paused) {
+                    try { history.pushState({ page: 'game', paused: true }, ''); } catch (e) {}
+                    this.setPaused(true);
+                    this.showToast('PAUSED - Press Back again to exit');
+                } else {
+                    this.showPage('menu');
+                }
+            }
+        });
+
         this.initDOM();
         this.initSensors();
         this.initTouchControls();
@@ -439,14 +453,69 @@ class SandtrixApp {
         // In-game Restart & Pause
         document.getElementById('btnRestart').addEventListener('click', () => this.restartGame());
         document.getElementById('btnPause').addEventListener('click', () => {
-            this.engine.paused = !this.engine.paused;
+            const nextState = !this.engine.paused;
+            this.setPaused(nextState);
             this.sound.init();
-            this.showToast(this.engine.paused ? 'PAUSED' : 'RESUMED');
+            this.showToast(nextState ? 'PAUSED' : 'RESUMED');
         });
 
         updateMenuCards();
         this.setGyroEnabled(this.gyroEnabled);
         this.showPage('menu');
+    }
+
+    setPaused(isPaused) {
+        this.engine.paused = isPaused;
+        const btnPause = document.getElementById('btnPause');
+        if (btnPause) {
+            btnPause.innerText = isPaused ? 'RESUME' : 'PAUSE';
+            if (isPaused) {
+                btnPause.classList.add('paused-state');
+            } else {
+                btnPause.classList.remove('paused-state');
+            }
+        }
+    }
+
+    handleBackPress() {
+        // 1. Dismiss any open modal overlay
+        const openModal = document.querySelector('.overlay.active');
+        if (openModal) {
+            openModal.classList.remove('active');
+            return 'handled';
+        }
+
+        // 2. If playing the game
+        if (this.currentPage === 'game' && this.gameStarted && !this.engine.gameOver) {
+            if (!this.engine.paused) {
+                // First back press: pause the game, do NOT exit
+                this.setPaused(true);
+                this.showToast('PAUSED - Press Back again to exit');
+                return 'handled';
+            } else {
+                // Second back press while already paused: exit/close app
+                if (window.AndroidApp && typeof window.AndroidApp.closeApp === 'function') {
+                    window.AndroidApp.closeApp();
+                }
+                return 'close';
+            }
+        }
+
+        // 3. If game is over, return to main menu
+        if (this.currentPage === 'game' && this.engine.gameOver) {
+            this.showPage('menu');
+            return 'handled';
+        }
+
+        // 4. If on the main menu, exit/close app
+        if (this.currentPage === 'menu') {
+            if (window.AndroidApp && typeof window.AndroidApp.closeApp === 'function') {
+                window.AndroidApp.closeApp();
+            }
+            return 'close';
+        }
+
+        return 'close';
     }
 
     updateMenuHighScores() {
@@ -467,7 +536,7 @@ class SandtrixApp {
         if (page === 'menu') {
             if (pageMenu) pageMenu.classList.add('active');
             if (pageGame) pageGame.classList.remove('active');
-            this.engine.paused = true;
+            this.setPaused(true);
             if (btnStart) {
                 btnStart.innerText = (this.gameStarted && !this.engine.gameOver) ? 'RESUME GAME' : 'START GAME';
             }
@@ -475,8 +544,9 @@ class SandtrixApp {
         } else {
             if (pageGame) pageGame.classList.add('active');
             if (pageMenu) pageMenu.classList.remove('active');
-            this.engine.paused = false;
+            this.setPaused(false);
             this.updateGyroControlsVisibility();
+            try { history.pushState({ page: 'game' }, ''); } catch (e) {}
         }
     }
 
@@ -790,6 +860,13 @@ class SandtrixApp {
             e.preventDefault();
             this.engine.isSoftDropping = false;
             if (!this.isSwiping) {
+                // If game is currently paused, tapping the playfield resumes the game!
+                if (this.engine.paused && this.currentPage === 'game' && !this.engine.gameOver) {
+                    this.setPaused(false);
+                    this.sound.playRotate();
+                    this.showToast('RESUMED');
+                    return;
+                }
                 // Quick Tap on Canvas = Rotate Clockwise!
                 if (this.engine.rotatePiece(1)) {
                     this.sound.playRotate();
@@ -838,7 +915,8 @@ class SandtrixApp {
                     break;
                 case 'KeyP':
                 case 'Escape':
-                    this.engine.paused = !this.engine.paused;
+                    this.setPaused(!this.engine.paused);
+                    this.showToast(this.engine.paused ? 'PAUSED' : 'RESUMED');
                     break;
                 case 'KeyR':
                     this.restartGame();
@@ -1195,6 +1273,28 @@ class SandtrixApp {
         this.particles.draw(this.ctx);
 
         this.ctx.restore();
+
+        // 6. Render Paused Screen Overlay on Playfield Canvas
+        if (this.engine.paused && this.currentPage === 'game' && this.gameStarted && !this.engine.gameOver) {
+            this.ctx.save();
+            this.ctx.fillStyle = 'rgba(11, 14, 20, 0.78)';
+            this.ctx.fillRect(0, 0, 400, 700);
+
+            this.ctx.font = '700 32px Comfortaa, Nunito, sans-serif';
+            this.ctx.fillStyle = '#48CAE4';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText('PAUSED', 200, 320);
+
+            this.ctx.font = '700 13px Nunito, sans-serif';
+            this.ctx.fillStyle = '#F3F6FA';
+            this.ctx.fillText('PRESS BACK TO EXIT', 200, 360);
+
+            this.ctx.font = '600 12px Nunito, sans-serif';
+            this.ctx.fillStyle = '#9AA7BD';
+            this.ctx.fillText('TAP SCREEN TO RESUME', 200, 385);
+            this.ctx.restore();
+        }
     }
 
     syncHUD() {
