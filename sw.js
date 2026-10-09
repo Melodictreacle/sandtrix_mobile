@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sandtrix-mobile-v18';
+const CACHE_NAME = 'sandtrix-mobile-v19';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

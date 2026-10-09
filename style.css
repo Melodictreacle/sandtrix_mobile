@@ -458,9 +458,7 @@ canvas#gameCanvas {
     font-size: 1.9rem;
     font-weight: 700;
     letter-spacing: 1.5px;
-    background: linear-gradient(135deg, #48CAE4 0%, #F6C453 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--accent-teal);
     line-height: 1.15;
 }
 
