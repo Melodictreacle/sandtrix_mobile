@@ -648,6 +648,7 @@ class SandEngine {
         this.activePiece = null;
         this.canHold = true;
         this.lockTimer = 0;
+        this.isSoftDropping = false;
 
         // Check danger ceiling breach
         if (this.checkDangerCeiling()) {
@@ -1146,7 +1147,9 @@ class SandEngine {
             ? [500, 440, 380, 320, 260, 210, 160, 120, 90, 70]
             : [45, 40, 35, 30, 25, 20, 16, 13, 10, 8];
 
-        const targetInterval = this.isSoftDropping ? 4 : gravityIntervals[Math.min(9, this.level - 1)];
+        const targetInterval = (this.mode === 'troll_classic')
+            ? (this.isSoftDropping ? 35 : gravityIntervals[Math.min(9, this.level - 1)])
+            : (this.isSoftDropping ? 4 : gravityIntervals[Math.min(9, this.level - 1)]);
 
         this.gravityTimer += dtMs;
         const maxStepsPerFrame = (this.mode === 'troll_classic') ? 1 : 12;
@@ -1160,9 +1163,12 @@ class SandEngine {
             if (this.activePiece) {
                 const dy = (this.mode === 'troll_classic') ? MINO_SIZE : 1;
                 if (!this.activePiece.tryMove(0, dy, this.grid)) {
-                    // Block landed on floor or sand pile
+                    // Block landed on floor or stack
                     this.lockTimer += targetInterval;
-                    if (this.lockTimer >= lockDelayMs || this.isSoftDropping) {
+                    const canLock = (this.mode === 'troll_classic')
+                        ? (this.lockTimer >= lockDelayMs)
+                        : (this.lockTimer >= lockDelayMs || this.isSoftDropping);
+                    if (canLock) {
                         const lockEvent = this.lockActivePiece();
                         Object.assign(tickResult, lockEvent);
                     }
