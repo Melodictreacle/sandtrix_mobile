@@ -351,6 +351,32 @@ class SandtrixApp {
                 modalSettings.style.display = 'flex';
             });
         }
+
+        const btnClearHighScores = document.getElementById('btnClearHighScores');
+        if (btnClearHighScores) {
+            btnClearHighScores.addEventListener('click', () => {
+                this.sound.playClear();
+                localStorage.removeItem('sandtrix_mobile_high_sandtrix');
+                localStorage.removeItem('sandtrix_mobile_high_troll');
+                localStorage.removeItem('sandtrix_mobile_high');
+
+                if (this.engine) {
+                    this.engine.highScore = 0;
+                }
+
+                const elSand = document.getElementById('settingsHighSandtrix');
+                const elTroll = document.getElementById('settingsHighTroll');
+                if (elSand) elSand.innerText = '0';
+                if (elTroll) elTroll.innerText = '0';
+
+                const lblHighScore = document.getElementById('lblHighScore');
+                if (lblHighScore) lblHighScore.innerText = '0';
+
+                this.updateMenuHighScores();
+                this.showToast('HIGH SCORES CLEARED');
+            });
+        }
+
         const closeSettings = () => {
             if (modalSettings) modalSettings.style.display = 'none';
         };

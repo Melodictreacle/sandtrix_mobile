@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=14">
+    <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
 
@@ -24,7 +24,6 @@
         <div class="menu-card-full">
             <div class="menu-brand">
                 <h1 class="menu-title">SANDTRIX</h1>
-                <div class="menu-subtitle">MOBILE EDITION</div>
             </div>
 
             <!-- Mode Selection Section -->
@@ -241,9 +240,10 @@
                     </div>
                     <div class="settings-stat-pill">
                         <span class="settings-stat-name">TROLL CLASSIC</span>
-                        <span id="settingsHighTroll" class="settings-stat-val" style="color: #EB4B4B;">0</span>
+                        <span id="settingsHighTroll" class="settings-stat-val" style="color: var(--accent-ruby);">0</span>
                     </div>
                 </div>
+                <button id="btnClearHighScores" class="touch-btn danger" style="width: 100%; padding: 10px; font-size: 0.76rem; margin-top: 8px;">CLEAR HIGH SCORES</button>
             </div>
         </div>
         <div class="modal-footer">
@@ -294,9 +294,9 @@
 <div id="toast" class="toast"></div>
 
 <!-- Scripts -->
-<script src="audio.js?v=14"></script>
-<script src="sand_engine.js?v=14"></script>
-<script src="app.js?v=14"></script>
+<script src="audio.js?v=15"></script>
+<script src="sand_engine.js?v=15"></script>
+<script src="app.js?v=15"></script>
 <script>
   if ('serviceWorker' in navigator) {
     let refreshing = false;
