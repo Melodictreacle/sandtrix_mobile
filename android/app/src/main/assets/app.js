@@ -170,6 +170,8 @@ class SandtrixApp {
             2: 0xFF53C4F6,  // #F6C453 (Warm Honey Amber)
             3: 0xFFA3CC4E,  // #4ECCA3 (Pastel Mint Jade)
             4: 0xFFE5925B,  // #5B92E5 (Soft Periwinkle Sky)
+            5: 0xFFF18D9D,  // #9D8DF1 (Soft Lavender Purple)
+            6: 0xFF439FFF,  // #FF9F43 (Pastel Tangerine Orange)
             50: 0xFFC79600, // #0096C7 (Crystal Sapphire Ocean Blue - Water)
             51: 0xFF00FFC8, // #C8FF00 (Radioactive Toxic Chartreuse - Acid)
             52: 0xFF6B6BFF  // #FF6B6B (Soft Blush Crimson)

@@ -10,7 +10,7 @@
 const BOARD_WIDTH = 80;
 const BOARD_HEIGHT = 140;
 const MINO_SIZE = 8;
-const DANGER_ROW = 16;
+const DANGER_ROW = 28;
 
 const MATERIAL_EMPTY = 0;
 const MATERIAL_WATER = 50;
@@ -23,6 +23,8 @@ const PALETTE = {
     2: '#F6C453', // Warm Honey Amber
     3: '#4ECCA3', // Pastel Mint Jade
     4: '#5B92E5', // Soft Periwinkle Sky
+    5: '#9D8DF1', // Soft Lavender Purple
+    6: '#FF9F43', // Pastel Tangerine Orange
     50: '#0096C7', // Crystal Sapphire Ocean Blue (Water)
     51: '#C8FF00', // Radioactive Toxic Chartreuse Lime (Acid)
     52: '#FF6B6B'  // Soft Blush Crimson (Bomb)
@@ -110,9 +112,10 @@ const SHAPES = {
 };
 
 const BFS_NEIGHBORS = [
-    [-1, -1], [-1, 0], [-1, 1],
-    [ 0, -1],          [ 0, 1],
-    [ 1, -1], [ 1, 0], [ 1, 1]
+    [-1,  0], // up
+    [ 0, -1], // left
+    [ 0,  1], // right
+    [ 1,  0]  // down
 ];
 
 // Sarcastic troll roasts for Troll Classic Mode
@@ -399,6 +402,7 @@ class BagRandomizer {
         this.enableElements = enableElements;
         this.isTroll = isTroll;
         this.bag = [];
+        this.colorBag = [];
         this.piecesSpawned = 0;
     }
 
@@ -428,8 +432,15 @@ class BagRandomizer {
         if (this.isTroll && Math.random() < 0.08) {
             return MATERIAL_BOMB; // Bomb block in Troll mode!
         }
-        // Canonical colors 1..4
-        return (this.piecesSpawned % 4) + 1;
+        // Draw from randomized 6-color bag so pieces don't loop predictably
+        if (this.colorBag.length === 0) {
+            this.colorBag = [1, 2, 3, 4, 5, 6];
+            for (let i = this.colorBag.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [this.colorBag[i], this.colorBag[j]] = [this.colorBag[j], this.colorBag[i]];
+            }
+        }
+        return this.colorBag.shift();
     }
 
     next() {
@@ -869,7 +880,7 @@ class SandEngine {
         let lastColor = 0;
         const visited = new Uint8Array(BOARD_WIDTH * BOARD_HEIGHT);
 
-        const colorsToCheck = [1, 2, 3, 4];
+        const colorsToCheck = [1, 2, 3, 4, 5, 6];
         if (this.enableElements) colorsToCheck.push(MATERIAL_WATER);
 
         for (const color of colorsToCheck) {
