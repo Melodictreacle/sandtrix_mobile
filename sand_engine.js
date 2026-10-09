@@ -812,22 +812,30 @@ class SandEngine {
                         const dlOk = (dlVal === MATERIAL_EMPTY || dlVal === MATERIAL_WATER);
                         const drOk = (drVal === MATERIAL_EMPTY || drVal === MATERIAL_WATER);
 
-                        if (dlOk && drOk) {
-                            const nx = preferLeft ? (x - 1) : (preferRight ? (x + 1) : (Math.random() < 0.5 ? x - 1 : x + 1));
-                            const targetVal = this.grid[(y + 1) * BOARD_WIDTH + nx];
-                            this.grid[(y + 1) * BOARD_WIDTH + nx] = mat;
-                            this.grid[y * BOARD_WIDTH + x] = (targetVal === MATERIAL_WATER) ? MATERIAL_WATER : MATERIAL_EMPTY;
-                            moved = true;
-                        } else if (dlOk && !preferRight) {
-                            const targetVal = this.grid[(y + 1) * BOARD_WIDTH + (x - 1)];
-                            this.grid[(y + 1) * BOARD_WIDTH + (x - 1)] = mat;
-                            this.grid[y * BOARD_WIDTH + x] = (targetVal === MATERIAL_WATER) ? MATERIAL_WATER : MATERIAL_EMPTY;
-                            moved = true;
-                        } else if (drOk && !preferLeft) {
-                            const targetVal = this.grid[(y + 1) * BOARD_WIDTH + (x + 1)];
-                            this.grid[(y + 1) * BOARD_WIDTH + (x + 1)] = mat;
-                            this.grid[y * BOARD_WIDTH + x] = (targetVal === MATERIAL_WATER) ? MATERIAL_WATER : MATERIAL_EMPTY;
-                            moved = true;
+                        if (dlOk || drOk) {
+                            // Sand Viscosity & Static Friction:
+                            // Resting sand has internal cohesion and resistance, forming taller heaps that take longer to spread.
+                            // Tilting the phone generates lateral momentum that triggers active avalanches.
+                            const slideChance = strongTilt ? 0.90 : (preferLeft || preferRight ? 0.65 : 0.38);
+                            if (Math.random() < slideChance) {
+                                if (dlOk && drOk) {
+                                    const nx = preferLeft ? (x - 1) : (preferRight ? (x + 1) : (Math.random() < 0.5 ? x - 1 : x + 1));
+                                    const targetVal = this.grid[(y + 1) * BOARD_WIDTH + nx];
+                                    this.grid[(y + 1) * BOARD_WIDTH + nx] = mat;
+                                    this.grid[y * BOARD_WIDTH + x] = (targetVal === MATERIAL_WATER) ? MATERIAL_WATER : MATERIAL_EMPTY;
+                                    moved = true;
+                                } else if (dlOk && !preferRight) {
+                                    const targetVal = this.grid[(y + 1) * BOARD_WIDTH + (x - 1)];
+                                    this.grid[(y + 1) * BOARD_WIDTH + (x - 1)] = mat;
+                                    this.grid[y * BOARD_WIDTH + x] = (targetVal === MATERIAL_WATER) ? MATERIAL_WATER : MATERIAL_EMPTY;
+                                    moved = true;
+                                } else if (drOk && !preferLeft) {
+                                    const targetVal = this.grid[(y + 1) * BOARD_WIDTH + (x + 1)];
+                                    this.grid[(y + 1) * BOARD_WIDTH + (x + 1)] = mat;
+                                    this.grid[y * BOARD_WIDTH + x] = (targetVal === MATERIAL_WATER) ? MATERIAL_WATER : MATERIAL_EMPTY;
+                                    moved = true;
+                                }
+                            }
                         } else if (strongTilt) {
                             // High phone tilt can slide resting sand sideways!
                             if (preferLeft && x > 0 && this.grid[y * BOARD_WIDTH + (x - 1)] === MATERIAL_EMPTY && Math.random() < 0.2) {
