@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0B0E14">
+    <title>SANDTRIX MOBILE - Gyro & Troll Edition</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=12">
+</head>
+<body>
+
+<div id="appContainer">
+    <!-- ========================================== -->
+    <!-- PAGE 1: DEDICATED SEPARATE MENU PAGE       -->
+    <!-- ========================================== -->
+    <div id="pageMenu" class="page-view active">
+        <div class="menu-card-full">
+            <div class="menu-brand">
+                <h1 class="menu-title">SANDTRIX</h1>
+                <div class="menu-subtitle">MOBILE EDITION</div>
+            </div>
+
+            <!-- Mode Selection Section -->
+            <div class="menu-section">
+                <div class="menu-section-title">SELECT GAMEMODE</div>
+                <div class="mode-select-grid">
+                    <div class="mode-card sandtrix active" id="menuModeSandtrix" data-mode="sandtrix">
+                        <div class="mode-card-header">
+                            <div class="mode-card-title-group">
+                                <span class="mode-badge-sand">SAND</span>
+                                <span class="mode-name">SANDTRIX</span>
+                            </div>
+                            <span class="mode-tag tag-sand">WATER &amp; ACID</span>
+                        </div>
+                    </div>
+
+                    <div class="mode-card troll" id="menuModeTroll" data-mode="troll_classic">
+                        <div class="mode-card-header">
+                            <div class="mode-card-title-group">
+                                <span class="mode-badge-troll">TROLL</span>
+                                <span class="mode-name">TROLL CLASSIC</span>
+                            </div>
+                            <span class="mode-tag tag-troll">CHAOS EDITION</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gyroscope Control Section -->
+            <div class="menu-section">
+                <div class="menu-section-title">CONTROL SCHEME</div>
+                <div class="gyro-toggle-row">
+                    <div class="gyro-toggle-info">
+                        <div class="gyro-toggle-label">
+                            <span>GYROSCOPE MOTION</span>
+                        </div>
+                        <div class="gyro-toggle-subtext" id="gyroToggleSubtext">Tilt phone to steer pieces &amp; slide sand</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="chkMenuGyro" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="menu-actions">
+                <button id="btnStartGame" class="start-btn">START GAME</button>
+                <div class="menu-secondary-actions">
+                    <button id="btnHowToPlay" class="menu-sub-btn">HOW TO PLAY</button>
+                    <button id="btnSettings" class="menu-sub-btn">SETTINGS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAGE 2: CLEAN GAME SCREEN                 -->
+    <!-- (Starts directly from game grid)           -->
+    <!-- ========================================== -->
+    <div id="pageGame" class="page-view">
+        <!-- Compact Top Navigation Bar -->
+        <div class="game-top-bar">
+            <button id="btnBackToMenu" class="nav-btn">MENU</button>
+            <div class="game-top-center">
+                <span id="gameModePill" class="game-mode-pill">SANDTRIX</span>
+                <span class="game-best-stat">BEST <span id="lblHighScore">0</span></span>
+            </div>
+            <button id="btnGameRestart" class="nav-btn">RESET</button>
+        </div>
+
+        <!-- Main Game Area (Game Grid + Side HUDs) -->
+        <div class="game-layout">
+            <!-- Left HUD (Only HOLD and expanded SCORE, NO HIGH SCORE BOX) -->
+            <div class="hud-side hud-left">
+                <div class="hud-card">
+                    <div class="hud-label">HOLD</div>
+                    <canvas id="holdCanvas" class="preview-box" width="50" height="50"></canvas>
+                </div>
+                <div class="hud-card score-card">
+                    <div class="hud-label">SCORE</div>
+                    <div id="lblScore" class="hud-val">0</div>
+                </div>
+            </div>
+
+            <!-- Central Playfield Canvas Grid -->
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas"></canvas>
+            </div>
+
+            <!-- Right HUD -->
+            <div class="hud-side hud-right">
+                <div class="hud-card">
+                    <div class="hud-label">NEXT</div>
+                    <canvas id="nextCanvas" class="preview-box" width="50" height="50"></canvas>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-label">LINES</div>
+                    <div id="lblLines" class="hud-val" style="color: #28B964;">0</div>
+                </div>
+                <div class="hud-card">
+                    <div class="hud-label">LEVEL</div>
+                    <div id="lblLevel" class="hud-val" style="color: #EB4B4B;">1</div>
+                </div>
+                <div id="badgeCombo" class="badge-combo">2x COMBO</div>
+            </div>
+        </div>
+
+        <!-- Mobile Touch Controls -->
+        <div class="controls-panel">
+            <div class="controls-row">
+                <button id="btnHold" class="touch-btn">HOLD</button>
+                <button id="btnRotCCW" class="touch-btn accent">ROT L</button>
+                <button id="btnRotCW" class="touch-btn primary">ROT R</button>
+                <button id="btnPause" class="touch-btn">PAUSE</button>
+            </div>
+            <div class="controls-row">
+                <button id="btnLeft" class="touch-btn">LEFT</button>
+                <button id="btnRight" class="touch-btn">RIGHT</button>
+                <button id="btnSoftDrop" class="touch-btn">DROP</button>
+                <button id="btnHardDrop" class="touch-btn danger">SLAM</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How To Play Modal -->
+<div id="howToPlayModal" class="overlay">
+    <div class="modal-card help-modal-card">
+        <div class="modal-header">
+            <div class="modal-title" style="margin-bottom: 0; color: var(--accent-teal);">HOW TO PLAY</div>
+            <button id="btnCloseHowToPlayTop" class="modal-close-x">&times;</button>
+        </div>
+        <div class="modal-scroll-body">
+            <div class="help-section">
+                <div class="help-section-title tag-sand">SANDTRIX MODE</div>
+                <p class="help-p">Blocks crumble into free-falling sand grains upon landing. Settled sand dunes slide dynamically with your phone's tilt gravity!</p>
+                <p class="help-p"><strong>OBJECTIVE:</strong> Form an uninterrupted line of the <strong>SAME COLOR</strong> from the left edge to the right edge to trigger a massive sand collapse clear.</p>
+                <div class="element-legend">
+                    <div class="element-item"><span class="elem-badge badge-water">WATER</span> Dynamic fluid that flows into low crevices and lifts floating blocks.</div>
+                    <div class="element-item"><span class="elem-badge badge-acid">ACID</span> Corrosive substance that steadily dissolves touching sand grains.</div>
+                    <div class="element-item"><span class="elem-badge badge-bomb">BOMB</span> Demolition charge that blasts open a crater on impact.</div>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <div class="help-section-title tag-troll">TROLL CLASSIC MODE</div>
+                <p class="help-p">Classic 10×17 rigid block puzzle. Clear complete horizontal rows to earn multiplier points.</p>
+                <p class="help-p"><strong>TROLL CALAMITIES:</strong> Watch out for spontaneous mid-air shape mutations, wind gusts, seismic tremors, reversed controls, and roasting commentary!</p>
+            </div>
+
+            <div class="help-section">
+                <div class="help-section-title">CONTROLS GUIDE</div>
+                <div class="help-controls-list">
+                    <div class="ctrl-guide-item"><strong>GYROSCOPE:</strong> Tilt phone left or right to steer falling pieces smoothly and slosh sand physics.</div>
+                    <div class="ctrl-guide-item"><strong>TAP PLAYFIELD:</strong> Rotate piece clockwise.</div>
+                    <div class="ctrl-guide-item"><strong>SWIPE DOWN:</strong> Soft drop.</div>
+                    <div class="ctrl-guide-item"><strong>SWIPE HORIZONTAL:</strong> Nudge piece left or right.</div>
+                    <div class="ctrl-guide-item"><strong>BUTTONS:</strong> LEFT, RIGHT, DROP, SLAM (instant drop), ROT L, ROT R, HOLD, PAUSE.</div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="btnCloseHowToPlay" class="touch-btn primary" style="width: 100%; padding: 12px;">GOT IT</button>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="overlay">
+    <div class="modal-card settings-modal-card">
+        <div class="modal-header">
+            <div class="modal-title" style="margin-bottom: 0; color: var(--text-primary);">SETTINGS</div>
+            <button id="btnCloseSettingsTop" class="modal-close-x">&times;</button>
+        </div>
+        <div class="modal-scroll-body">
+            <!-- Master Volume -->
+            <div class="settings-group">
+                <div class="settings-group-header">
+                    <span class="settings-label">MASTER VOLUME</span>
+                    <span id="lblVolumeVal" class="settings-badge">70%</span>
+                </div>
+                <input type="range" id="sliderVolume" min="0" max="100" step="5" value="70" class="styled-slider">
+                <div class="slider-ticks">
+                    <span>0% (OFF)</span>
+                    <span>50%</span>
+                    <span>100%</span>
+                </div>
+            </div>
+
+            <!-- Starting Level -->
+            <div class="settings-group">
+                <div class="settings-group-header">
+                    <span class="settings-label">STARTING LEVEL</span>
+                    <span id="lblLevelDesc" class="settings-badge">LEVEL 1</span>
+                </div>
+                <div class="level-picker-grid" id="levelPickerGrid"></div>
+                <div class="settings-hint">Higher starting levels increase drop speed and award higher score multipliers.</div>
+            </div>
+
+            <!-- High Score Stats in Settings -->
+            <div class="settings-group">
+                <div class="settings-group-header">
+                    <span class="settings-label">HIGH SCORE RECORDS</span>
+                </div>
+                <div class="settings-stats-row">
+                    <div class="settings-stat-pill">
+                        <span class="settings-stat-name">SANDTRIX</span>
+                        <span id="settingsHighSandtrix" class="settings-stat-val">0</span>
+                    </div>
+                    <div class="settings-stat-pill">
+                        <span class="settings-stat-name">TROLL CLASSIC</span>
+                        <span id="settingsHighTroll" class="settings-stat-val" style="color: #EB4B4B;">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="btnCloseSettings" class="touch-btn primary" style="width: 100%; padding: 12px;">SAVE &amp; CLOSE</button>
+        </div>
+    </div>
+</div>
+
+<!-- Game Over Modal -->
+<div id="gameOverOverlay" class="overlay">
+    <div class="modal-card game-over-modal-card">
+        <div class="modal-title">GAME OVER</div>
+        <div id="modalMemeLine" class="game-over-meme">"Skill issue officially documented."</div>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-item-label">FINAL SCORE</div>
+                <div id="finalScoreLabel" class="stat-item-val">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">BEST RECORD</div>
+                <div id="finalHighScoreLabel" class="stat-item-val" style="color: var(--accent-gold);">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">LINES CLEARED</div>
+                <div id="finalLinesLabel" class="stat-item-val" style="color: var(--accent-green);">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">PIECES ROTATED</div>
+                <div id="finalRotationsLabel" class="stat-item-val" style="color: var(--accent-teal);">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">PIECES PLACED</div>
+                <div id="finalPiecesLabel" class="stat-item-val">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">MODE PLAYED</div>
+                <div id="finalModeLabel" class="stat-item-val" style="font-size: 0.85rem; color: #00D2D7;">Sandtrix</div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 8px; width: 100%;">
+            <button id="btnGameOverMenu" class="touch-btn" style="flex: 1; padding: 14px; background-color: #242C3D;">MENU</button>
+            <button id="btnRestart" class="touch-btn primary" style="flex: 1.5; padding: 14px;">PLAY AGAIN</button>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Scripts -->
+<script src="audio.js?v=12"></script>
+<script src="sand_engine.js?v=12"></script>
+<script src="app.js?v=12"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').then((reg) => {
+        reg.update();
+      }).catch(err => console.log('SW registration failed:', err));
+    });
+  }
+</script>
+</body>
+</html>

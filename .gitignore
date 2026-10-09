@@ -1,0 +1,29 @@
+# Binaries and executables
+cloudflared.exe
+*.exe
+
+# SSL / TLS local dev certificates
+cert.pem
+key.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Android & Gradle
+.gradle/
+build/
+*/build/
+app/build/
+*.apk
+*.aab
+local.properties
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
