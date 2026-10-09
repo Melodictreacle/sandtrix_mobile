@@ -1228,6 +1228,31 @@ class SandtrixApp {
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.drawImage(this.offscreenCanvas, 0, 0, 400, 700);
 
+        // 1.5. Render Classic Mino Grid Lines (Troll Classic Mode)
+        if (this.currentMode === 'troll_classic') {
+            this.ctx.save();
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            this.ctx.lineWidth = 1;
+            this.ctx.beginPath();
+
+            // Vertical column lines (10 columns, 40px width)
+            for (let c = 1; c < 10; c++) {
+                const gx = c * 40;
+                this.ctx.moveTo(gx, 20);
+                this.ctx.lineTo(gx, 700);
+            }
+
+            // Horizontal row lines (17 rows, 40px height, from y = 20px to y = 700px)
+            for (let r = 0; r <= 17; r++) {
+                const gy = 20 + r * 40;
+                this.ctx.moveTo(0, gy);
+                this.ctx.lineTo(400, gy);
+            }
+
+            this.ctx.stroke();
+            this.ctx.restore();
+        }
+
         // 2. Playfield Boundary Walls (crisp high-contrast frame)
         this.ctx.strokeStyle = '#2A364F';
         this.ctx.lineWidth = 2;
