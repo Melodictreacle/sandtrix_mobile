@@ -450,6 +450,7 @@ class SandtrixApp {
             if (pageGame) pageGame.classList.add('active');
             if (pageMenu) pageMenu.classList.remove('active');
             this.engine.paused = false;
+            this.updateGyroControlsVisibility();
         }
     }
 
@@ -472,6 +473,24 @@ class SandtrixApp {
             this.currentPitch = 0;
             this.steerAccumulator = 0;
             this.engine.setTilt(0);
+        }
+
+        this.updateGyroControlsVisibility();
+    }
+
+    updateGyroControlsVisibility() {
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+        const controlsPanel = document.querySelector('.controls-panel');
+
+        if (controlsPanel) {
+            controlsPanel.classList.toggle('gyro-active', this.gyroEnabled);
+        }
+        if (btnLeft) {
+            btnLeft.style.display = this.gyroEnabled ? 'none' : '';
+        }
+        if (btnRight) {
+            btnRight.style.display = this.gyroEnabled ? 'none' : '';
         }
     }
 
