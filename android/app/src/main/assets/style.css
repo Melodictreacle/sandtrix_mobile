@@ -841,15 +841,15 @@ input:checked + .slider:before {
 }
 
 .badge-water {
-    background-color: rgba(72, 202, 228, 0.18);
-    color: var(--accent-teal);
-    border: 1px solid rgba(72, 202, 228, 0.35);
+    background-color: rgba(0, 150, 199, 0.22);
+    color: #0096C7;
+    border: 1px solid rgba(0, 150, 199, 0.45);
 }
 
 .badge-acid {
-    background-color: rgba(195, 232, 141, 0.18);
-    color: #C3E88D;
-    border: 1px solid rgba(195, 232, 141, 0.35);
+    background-color: rgba(200, 255, 0, 0.2);
+    color: #C8FF00;
+    border: 1px solid rgba(200, 255, 0, 0.45);
 }
 
 .badge-bomb {

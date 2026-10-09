@@ -63,7 +63,7 @@ class ParticleSystem {
                 y: pt.y * 5,
                 vx: (Math.random() - 0.5) * 1.5,
                 vy: -1.0 - Math.random() * 2.0,
-                color: '#CDEB2D',
+                color: '#C8FF00',
                 size: 1.5 + Math.random() * 2.0,
                 alpha: 1.0,
                 life: 20,
@@ -170,8 +170,8 @@ class SandtrixApp {
             2: 0xFF53C4F6,  // #F6C453 (Warm Honey Amber)
             3: 0xFFA3CC4E,  // #4ECCA3 (Pastel Mint Jade)
             4: 0xFFE5925B,  // #5B92E5 (Soft Periwinkle Sky)
-            50: 0xFFE4CA48, // #48CAE4 (Soft Lagoon Aqua)
-            51: 0xFF8DE8C3, // #C3E88D (Pastel Lime)
+            50: 0xFFC79600, // #0096C7 (Crystal Sapphire Ocean Blue - Water)
+            51: 0xFF00FFC8, // #C8FF00 (Radioactive Toxic Chartreuse - Acid)
             52: 0xFF6B6BFF  // #FF6B6B (Soft Blush Crimson)
         };
 
@@ -917,7 +917,7 @@ class SandtrixApp {
 
         if (ev.landedWater) {
             this.sound.playWaterSplash();
-            this.particles.addSplash(200, 680, '#48CAE4', 25);
+            this.particles.addSplash(200, 680, '#0096C7', 25);
         }
 
         if (ev.landedAcid) {

@@ -23,8 +23,8 @@ const PALETTE = {
     2: '#F6C453', // Warm Honey Amber
     3: '#4ECCA3', // Pastel Mint Jade
     4: '#5B92E5', // Soft Periwinkle Sky
-    50: '#48CAE4', // Soft Lagoon Aqua (Water)
-    51: '#C3E88D', // Pastel Lime (Acid)
+    50: '#0096C7', // Crystal Sapphire Ocean Blue (Water)
+    51: '#C8FF00', // Radioactive Toxic Chartreuse Lime (Acid)
     52: '#FF6B6B'  // Soft Blush Crimson (Bomb)
 };
 
