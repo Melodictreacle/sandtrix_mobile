@@ -1033,6 +1033,18 @@ class SandtrixApp {
         return memes[Math.floor(Math.random() * memes.length)];
     }
 
+    formatSurvivalTime(ms) {
+        const totalSec = Math.floor(Math.max(0, ms) / 1000);
+        const mins = Math.floor(totalSec / 60);
+        const secs = totalSec % 60;
+        if (mins >= 60) {
+            const hrs = Math.floor(mins / 60);
+            const remMins = mins % 60;
+            return `${hrs}h ${remMins.toString().padStart(2, '0')}m ${secs.toString().padStart(2, '0')}s`;
+        }
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
     showGameOverOverlay() {
         const overlay = document.getElementById('gameOverOverlay');
         if (overlay) {
@@ -1040,6 +1052,9 @@ class SandtrixApp {
             
             const hsEl = document.getElementById('finalHighScoreLabel');
             if (hsEl) hsEl.innerText = this.engine.highScore.toLocaleString();
+
+            const timeEl = document.getElementById('finalTimeLabel');
+            if (timeEl) timeEl.innerText = this.formatSurvivalTime(this.engine.survivalTimeMs || 0);
 
             const linesEl = document.getElementById('finalLinesLabel');
             if (linesEl) linesEl.innerText = this.engine.linesCleared.toLocaleString();

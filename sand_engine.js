@@ -471,6 +471,7 @@ class SandEngine {
         this.combo = 0;
         this.gameOver = false;
         this.paused = false;
+        this.survivalTimeMs = 0;
 
         this.randomizer = new BagRandomizer(this.enableElements, this.mode === 'troll_classic');
         this.activePiece = null;
@@ -1030,6 +1031,7 @@ class SandEngine {
     tick(dtMs) {
         if (this.gameOver || this.paused) return {};
 
+        this.survivalTimeMs += dtMs;
         const tickResult = {};
 
         // Invert controls timer countdown
