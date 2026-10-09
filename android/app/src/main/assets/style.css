@@ -819,17 +819,60 @@ input:checked + .slider:before {
 .element-legend {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     margin-top: 4px;
 }
 
-.element-item {
-    font-size: 0.72rem;
+.element-category-heading {
+    font-size: 0.63rem;
+    font-weight: 800;
+    letter-spacing: 0.6px;
     color: var(--text-secondary);
-    line-height: 1.35;
+    text-transform: uppercase;
+}
+
+.element-group-grid {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     gap: 6px;
+}
+
+.element-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 7px 9px;
+}
+
+.color-swatch-box {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: inline-block;
+}
+
+.element-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.element-name {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+}
+
+.element-desc {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    line-height: 1.3;
 }
 
 .elem-badge {

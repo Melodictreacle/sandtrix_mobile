@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=17">
+    <link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
 
@@ -166,10 +166,67 @@
                 <div class="help-section-title tag-sand">SANDTRIX MODE</div>
                 <p class="help-p">Blocks crumble into free-falling sand grains upon landing. Settled sand dunes slide dynamically with your phone's tilt gravity!</p>
                 <p class="help-p"><strong>OBJECTIVE:</strong> Form an uninterrupted line of the <strong>SAME COLOR</strong> from the left edge to the right edge to trigger a massive sand collapse clear.</p>
+            </div>
+
+            <div class="help-section">
+                <div class="help-section-title">BLOCK COLORS &amp; ELEMENTS</div>
                 <div class="element-legend">
-                    <div class="element-item"><span class="elem-badge badge-water">WATER</span> Dynamic fluid that flows into low crevices and lifts floating blocks.</div>
-                    <div class="element-item"><span class="elem-badge badge-acid">ACID</span> Corrosive substance that steadily dissolves touching sand grains.</div>
-                    <div class="element-item"><span class="elem-badge badge-bomb">BOMB</span> Demolition charge that blasts open a crater on impact.</div>
+                    <div class="element-category-heading">SAND COLORS</div>
+                    <div class="element-group-grid">
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #F26D78; box-shadow: 0 0 8px rgba(242, 109, 120, 0.45);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #F26D78;">RED SAND</span>
+                                <span class="element-desc">Forms coral dunes. Connect wall-to-wall to clear.</span>
+                            </div>
+                        </div>
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #F6C453; box-shadow: 0 0 8px rgba(246, 196, 83, 0.45);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #F6C453;">YELLOW SAND</span>
+                                <span class="element-desc">Forms warm amber dunes. Connect wall-to-wall to clear.</span>
+                            </div>
+                        </div>
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #4ECCA3; box-shadow: 0 0 8px rgba(78, 204, 163, 0.45);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #4ECCA3;">GREEN SAND</span>
+                                <span class="element-desc">Forms pastel mint dunes. Connect wall-to-wall to clear.</span>
+                            </div>
+                        </div>
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #5B92E5; box-shadow: 0 0 8px rgba(91, 146, 229, 0.45);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #5B92E5;">BLUE SAND</span>
+                                <span class="element-desc">Forms periwinkle dunes. Connect wall-to-wall to clear.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="element-category-heading" style="margin-top: 6px;">SPECIAL FLUIDS &amp; HAZARDS</div>
+                    <div class="element-group-grid">
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #0096C7; box-shadow: 0 0 8px rgba(0, 150, 199, 0.5);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #0096C7;">WATER</span>
+                                <span class="element-desc">Crystal ocean blue fluid that flows into crevices and floats blocks. Connect wall-to-wall for a water wave clear!</span>
+                            </div>
+                        </div>
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #C8FF00; box-shadow: 0 0 8px rgba(200, 255, 0, 0.5);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #C8FF00;">ACID</span>
+                                <span class="element-desc">Radioactive toxic lime substance that steadily eats and dissolves touching sand.</span>
+                            </div>
+                        </div>
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #FF6B6B; box-shadow: 0 0 8px rgba(255, 107, 107, 0.5);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #FF6B6B;">BOMB</span>
+                                <span class="element-desc">Demolition explosive charge that blasts open a crater on impact.</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -298,9 +355,9 @@
 <div id="toast" class="toast"></div>
 
 <!-- Scripts -->
-<script src="audio.js?v=17"></script>
-<script src="sand_engine.js?v=17"></script>
-<script src="app.js?v=17"></script>
+<script src="audio.js?v=18"></script>
+<script src="sand_engine.js?v=18"></script>
+<script src="app.js?v=18"></script>
 <script>
   if ('serviceWorker' in navigator) {
     let refreshing = false;
