@@ -10,7 +10,7 @@
 const BOARD_WIDTH = 80;
 const BOARD_HEIGHT = 140;
 const MINO_SIZE = 8;
-const DANGER_ROW = 28;
+const DANGER_ROW = 16;
 
 const MATERIAL_EMPTY = 0;
 const MATERIAL_WATER = 50;
