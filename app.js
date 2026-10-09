@@ -185,6 +185,7 @@ class SandtrixApp {
         this.engine = new SandEngine(this.currentMode, this.enableElements, this.startLevel);
         this.engine.paused = true; // Paused until user taps START GAME in menu
         this.gameStarted = false;
+        this.gameOverDisplayed = false;
 
         // Gyroscope / Motion Sensor State
         this.gyroEnabled = localStorage.getItem('sandtrix_gyro') !== 'false';
@@ -536,6 +537,7 @@ class SandtrixApp {
         const btnStart = document.getElementById('btnStartGame');
 
         if (page === 'menu') {
+            this.gameOverDisplayed = false;
             if (pageMenu) pageMenu.classList.add('active');
             if (pageGame) pageGame.classList.remove('active');
             this.setPaused(true);
@@ -596,6 +598,7 @@ class SandtrixApp {
         this.sound.init();
         this.currentMode = mode;
         this.menuSelectedMode = mode;
+        this.gameOverDisplayed = false;
         localStorage.setItem('sandtrix_mode', mode);
         this.engine = new SandEngine(this.currentMode, this.enableElements, this.startLevel);
         this.restartGame();
@@ -616,6 +619,7 @@ class SandtrixApp {
 
     restartGame() {
         this.sound.init();
+        this.gameOverDisplayed = false;
         this.engine = new SandEngine(this.currentMode, this.enableElements, this.startLevel);
         this.hideGameOverOverlay();
     }
@@ -1041,11 +1045,14 @@ class SandtrixApp {
             if (ev.roast) this.showTrollRoast(ev.roast);
         }
 
-        if (ev.gameOver) {
-            this.sound.playGameOver();
-            this.showGameOverOverlay();
-            if (this.currentMode === 'troll_classic') {
-                this.showTrollRoast(getRandomTrollRoast('gameOver'));
+        if (ev.gameOver || (this.engine && this.engine.gameOver)) {
+            if (!this.gameOverDisplayed) {
+                this.gameOverDisplayed = true;
+                this.sound.playGameOver();
+                this.showGameOverOverlay();
+                if (this.currentMode === 'troll_classic') {
+                    this.showTrollRoast(getRandomTrollRoast('gameOver'));
+                }
             }
         }
     }
@@ -1158,6 +1165,7 @@ class SandtrixApp {
     hideGameOverOverlay() {
         const overlay = document.getElementById('gameOverOverlay');
         if (overlay) overlay.style.display = 'none';
+        this.gameOverDisplayed = false;
     }
 
     // ==========================================
@@ -1167,15 +1175,22 @@ class SandtrixApp {
         const dtMs = Math.min(60, now - this.lastTime);
         this.lastTime = now;
 
-        if (this.currentPage === 'game' && this.gameStarted && !this.engine.paused) {
-            // Process Gyroscope Steering
-            if (this.gyroEnabled) {
-                this.processGyroSteering(dtMs);
-            }
+        if (this.currentPage === 'game' && this.gameStarted) {
+            if (this.engine.gameOver) {
+                this.handleTickEvents({ gameOver: true });
+            } else if (!this.engine.paused) {
+                // Process Gyroscope Steering
+                if (this.gyroEnabled) {
+                    this.processGyroSteering(dtMs);
+                }
 
-            // Simulation Tick
-            const tickEvents = this.engine.tick(dtMs);
-            this.handleTickEvents(tickEvents);
+                // Simulation Tick
+                const tickEvents = this.engine.tick(dtMs);
+                if (this.engine.gameOver) {
+                    tickEvents.gameOver = true;
+                }
+                this.handleTickEvents(tickEvents);
+            }
         }
 
         // Render Frame & Sync HUD only when on game screen

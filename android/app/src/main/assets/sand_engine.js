@@ -561,7 +561,11 @@ class SandEngine {
 
         if (!this.holdPiece) {
             this.holdPiece = new TetrominoPiece(currentShape, currentColor, isTroll);
-            this.spawnPiece();
+            if (!this.spawnPiece()) {
+                this.gameOver = true;
+                this.updateHighScore();
+                return false;
+            }
         } else {
             const heldShape = this.holdPiece.shape;
             const heldColor = this.holdPiece.colorIdx;
@@ -569,6 +573,11 @@ class SandEngine {
             this.activePiece = new TetrominoPiece(heldShape, heldColor, isTroll);
             if (isTroll) {
                 this.activePiece.y = 4;
+            }
+            if (this.activePiece.collides(this.grid, 0, 0)) {
+                this.gameOver = true;
+                this.updateHighScore();
+                return false;
             }
         }
         this.canHold = false;
@@ -601,6 +610,9 @@ class SandEngine {
         const event = this.lockActivePiece();
         event.impactCoords = impactCoords;
         event.hardDropped = true;
+        if (this.gameOver) {
+            event.gameOver = true;
+        }
         return event;
     }
 
@@ -638,20 +650,34 @@ class SandEngine {
         this.lockTimer = 0;
 
         // Check danger ceiling breach
+        if (this.checkDangerCeiling()) {
+            this.gameOver = true;
+            this.updateHighScore();
+            event.gameOver = true;
+            return event;
+        }
+
+        // Spawn next piece; if top-out occurs, trigger Game Over immediately
+        if (!this.spawnPiece()) {
+            this.gameOver = true;
+            this.updateHighScore();
+            event.gameOver = true;
+            return event;
+        }
+
+        return event;
+    }
+
+    checkDangerCeiling() {
         const dangerLimit = (this.mode === 'troll_classic') ? (4 + MINO_SIZE) : DANGER_ROW;
         for (let r = 0; r < dangerLimit; r++) {
             for (let c = 0; c < BOARD_WIDTH; c++) {
                 if (this.grid[r * BOARD_WIDTH + c] !== MATERIAL_EMPTY) {
-                    this.gameOver = true;
-                    this.updateHighScore();
-                    event.gameOver = true;
-                    return event;
+                    return true;
                 }
             }
         }
-
-        this.spawnPiece();
-        return event;
+        return false;
     }
 
     detonateBomb(cx, cy, radius) {
@@ -1058,7 +1084,8 @@ class SandEngine {
     // Main Simulation Tick (Called every frame)
     // ==========================================
     tick(dtMs) {
-        if (this.gameOver || this.paused) return {};
+        if (this.gameOver) return { gameOver: true };
+        if (this.paused) return {};
 
         this.survivalTimeMs += dtMs;
         const tickResult = {};
@@ -1156,6 +1183,18 @@ class SandEngine {
         } else if (!this.activePiece) {
             // Reset combo when sand settles
             this.combo = 0;
+        }
+
+        // Continuous danger ceiling breach check
+        if (this.checkDangerCeiling()) {
+            this.gameOver = true;
+            this.updateHighScore();
+            tickResult.gameOver = true;
+            return tickResult;
+        }
+
+        if (this.gameOver) {
+            tickResult.gameOver = true;
         }
 
         return tickResult;
