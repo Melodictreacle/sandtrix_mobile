@@ -1175,8 +1175,11 @@ class SandtrixApp {
         // Render Hold Piece Preview
         this.renderPiecePreview('holdCanvas', this.engine.holdPiece);
 
-        // Render Next Piece Preview
-        this.renderPiecePreview('nextCanvas', this.engine.nextQueue[0]);
+        // Render Next Pieces Queue (Incoming elements queue)
+        const nextIds = ['nextCanvas', 'nextCanvas1', 'nextCanvas2'];
+        for (let i = 0; i < nextIds.length; i++) {
+            this.renderPiecePreview(nextIds[i], this.engine.nextQueue[i]);
+        }
     }
 
     renderPiecePreview(canvasId, piece) {

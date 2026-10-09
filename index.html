@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=12">
+    <link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 
@@ -117,17 +117,21 @@
 
             <!-- Right HUD -->
             <div class="hud-side hud-right">
-                <div class="hud-card">
+                <div class="hud-card next-queue-card">
                     <div class="hud-label">NEXT</div>
-                    <canvas id="nextCanvas" class="preview-box" width="50" height="50"></canvas>
+                    <div class="next-queue-list">
+                        <canvas id="nextCanvas" class="preview-box next-item-primary" width="50" height="50"></canvas>
+                        <canvas id="nextCanvas1" class="preview-box next-item-sub" width="40" height="40"></canvas>
+                        <canvas id="nextCanvas2" class="preview-box next-item-sub" width="40" height="40"></canvas>
+                    </div>
                 </div>
                 <div class="hud-card">
                     <div class="hud-label">LINES</div>
-                    <div id="lblLines" class="hud-val" style="color: #28B964;">0</div>
+                    <div id="lblLines" class="hud-val" style="color: #4ECCA3;">0</div>
                 </div>
                 <div class="hud-card">
                     <div class="hud-label">LEVEL</div>
-                    <div id="lblLevel" class="hud-val" style="color: #EB4B4B;">1</div>
+                    <div id="lblLevel" class="hud-val" style="color: #F26D78;">1</div>
                 </div>
                 <div id="badgeCombo" class="badge-combo">2x COMBO</div>
             </div>
@@ -290,9 +294,9 @@
 <div id="toast" class="toast"></div>
 
 <!-- Scripts -->
-<script src="audio.js?v=12"></script>
-<script src="sand_engine.js?v=12"></script>
-<script src="app.js?v=12"></script>
+<script src="audio.js?v=13"></script>
+<script src="sand_engine.js?v=13"></script>
+<script src="app.js?v=13"></script>
 <script>
   if ('serviceWorker' in navigator) {
     let refreshing = false;

@@ -489,8 +489,8 @@ class SandEngine {
         this.controlsInverted = false;
         this.controlsInvertTimer = 0;
 
-        // Fill next queue and spawn
-        for (let i = 0; i < 3; i++) {
+        // Fill next queue with generous buffer and spawn
+        for (let i = 0; i < 6; i++) {
             this.nextQueue.push(this.randomizer.next());
         }
         this.spawnPiece();
