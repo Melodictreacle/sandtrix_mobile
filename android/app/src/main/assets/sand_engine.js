@@ -191,9 +191,10 @@ function getRandomTrollRoast(category) {
 }
 
 class TetrominoPiece {
-    constructor(shape, colorIdx) {
+    constructor(shape, colorIdx, isTroll = false) {
         this.shape = shape;
         this.colorIdx = colorIdx;
+        this.isTroll = isTroll;
         this.rotation = 0;
         this.size = SHAPES[shape] ? SHAPES[shape].size : 3;
 
@@ -201,7 +202,7 @@ class TetrominoPiece {
         const boardMinos = BOARD_WIDTH / MINO_SIZE; // 10
         const spawnCol = Math.floor((boardMinos - this.size) / 2); // 3 for 3-wide
         this.x = spawnCol * MINO_SIZE;
-        this.y = 0;
+        this.y = isTroll ? 4 : 0;
 
         this.maskWidth = this.size * MINO_SIZE;
         this.maskHeight = this.size * MINO_SIZE;
@@ -450,7 +451,7 @@ class BagRandomizer {
         const shape = this.bag.shift();
         const color = this.pickColor();
         this.piecesSpawned++;
-        return new TetrominoPiece(shape, color);
+        return new TetrominoPiece(shape, color, this.isTroll);
     }
 }
 
@@ -521,10 +522,13 @@ class SandEngine {
         this.canHold = true;
         this.lockTimer = 0;
 
-        // Troll mid-air shift preparation
+        // Troll mid-air shift preparation and vertical grid alignment
         if (this.mode === 'troll_classic') {
+            this.activePiece.y = 4;
             this.pieceHasShifted = false;
             this.pieceShiftTriggerY = 30 + Math.floor(Math.random() * 50);
+        } else {
+            this.activePiece.y = 0;
         }
 
         // Clamp spawn position strictly within legal boundary
@@ -551,17 +555,21 @@ class SandEngine {
     holdCurrentPiece() {
         if (!this.canHold || !this.activePiece || this.gameOver || this.paused) return false;
 
+        const isTroll = (this.mode === 'troll_classic');
         const currentShape = this.activePiece.shape;
         const currentColor = this.activePiece.colorIdx;
 
         if (!this.holdPiece) {
-            this.holdPiece = new TetrominoPiece(currentShape, currentColor);
+            this.holdPiece = new TetrominoPiece(currentShape, currentColor, isTroll);
             this.spawnPiece();
         } else {
             const heldShape = this.holdPiece.shape;
             const heldColor = this.holdPiece.colorIdx;
-            this.holdPiece = new TetrominoPiece(currentShape, currentColor);
-            this.activePiece = new TetrominoPiece(heldShape, heldColor);
+            this.holdPiece = new TetrominoPiece(currentShape, currentColor, isTroll);
+            this.activePiece = new TetrominoPiece(heldShape, heldColor, isTroll);
+            if (isTroll) {
+                this.activePiece.y = 4;
+            }
         }
         this.canHold = false;
         this.lockTimer = 0;
@@ -586,7 +594,8 @@ class SandEngine {
 
     hardDrop() {
         if (!this.activePiece || this.gameOver || this.paused) return null;
-        const ghostY = this.activePiece.getGhostY(this.grid, MINO_SIZE);
+        const step = (this.mode === 'troll_classic') ? MINO_SIZE : 1;
+        const ghostY = this.activePiece.getGhostY(this.grid, step);
         this.activePiece.y = ghostY;
         const impactCoords = this.activePiece.getOccupiedGrains();
         const event = this.lockActivePiece();
@@ -666,6 +675,7 @@ class SandEngine {
     }
 
     triggerEarthquake() {
+        if (this.mode === 'troll_classic') return; // Preserve rigid 8x8 mino integrity in classic mode
         // Shake grains sideways
         for (let y = BOARD_HEIGHT - 2; y >= 20; y--) {
             for (let x = 0; x < BOARD_WIDTH; x++) {
