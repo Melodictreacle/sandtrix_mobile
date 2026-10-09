@@ -1144,14 +1144,14 @@ class SandEngine {
         // Gravity intervals
         const gravityIntervals = (this.mode === 'troll_classic')
             ? [500, 440, 380, 320, 260, 210, 160, 120, 90, 70]
-            : [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+            : [45, 40, 35, 30, 25, 20, 16, 13, 10, 8];
 
-        const targetInterval = this.isSoftDropping ? 2 : gravityIntervals[Math.min(9, this.level - 1)];
+        const targetInterval = this.isSoftDropping ? 4 : gravityIntervals[Math.min(9, this.level - 1)];
 
         this.gravityTimer += dtMs;
         const maxStepsPerFrame = (this.mode === 'troll_classic') ? 1 : 12;
         let stepsTaken = 0;
-        const lockDelayMs = (this.mode === 'troll_classic') ? 450 : 80;
+        const lockDelayMs = (this.mode === 'troll_classic') ? 450 : 0;
 
         while (this.gravityTimer >= targetInterval && stepsTaken < maxStepsPerFrame) {
             this.gravityTimer -= targetInterval;
