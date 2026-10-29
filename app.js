@@ -722,13 +722,43 @@ class SandtrixApp {
     }
 
     showTrollRoast(msg) {
+        if (!msg) return;
         const roastBanner = document.getElementById('trollRoastBanner');
         if (roastBanner) {
-            roastBanner.innerText = msg;
+            let icon = '⚡';
+            let variantClass = 'roast-shift';
+            const upper = msg.toUpperCase();
+
+            if (upper.includes('SHIFT') || upper.includes('MUTATION') || upper.includes('ADAPT')) {
+                icon = '🔄';
+                variantClass = 'roast-shift';
+            } else if (upper.includes('EARTHQUAKE') || upper.includes('TREMOR') || upper.includes('SEISMIC')) {
+                icon = '🌋';
+                variantClass = 'roast-calamity';
+            } else if (upper.includes('WIND') || upper.includes('GALE')) {
+                icon = '💨';
+                variantClass = 'roast-calamity';
+            } else if (upper.includes('INVERTED') || upper.includes('CONFUSION')) {
+                icon = '🔀';
+                variantClass = 'roast-calamity';
+            } else if (upper.includes('KABOOM') || upper.includes('CRATER') || upper.includes('BOMB')) {
+                icon = '💥';
+                variantClass = 'roast-calamity';
+            } else if (upper.includes('GENIUS') || upper.includes('CALCULATED') || upper.includes('BRAIN') || upper.includes('AVALANCHE') || upper.includes('COMBO')) {
+                icon = '⭐';
+                variantClass = 'roast-combo';
+            }
+
+            roastBanner.className = `troll-roast-banner ${variantClass}`;
+            roastBanner.innerHTML = `<span style="font-size: 1.05em;">${icon}</span><span>${msg}</span>`;
+            void roastBanner.offsetWidth; // Force reflow for crisp animation restart
             roastBanner.classList.add('pop');
-            setTimeout(() => roastBanner.classList.remove('pop'), 2800);
+
+            if (this.roastTimeout) clearTimeout(this.roastTimeout);
+            this.roastTimeout = setTimeout(() => {
+                roastBanner.classList.remove('pop');
+            }, 2300);
         }
-        this.particles.addFloatingText(200, 260, msg, '#FF4B4B', 16);
     }
 
     // Sensors

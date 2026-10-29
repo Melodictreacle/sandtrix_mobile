@@ -400,10 +400,17 @@ class TetrominoPiece {
         this.updateGrainMask();
 
         let nudged = false;
-        const nudgeOffsets = [0, -MINO_SIZE, MINO_SIZE, -MINO_SIZE * 2, MINO_SIZE * 2];
-        for (const nx of nudgeOffsets) {
-            if (!this.collides(grid, nx, 0)) {
+        const nudgeOffsets = [
+            [0, 0],
+            [-MINO_SIZE, 0], [MINO_SIZE, 0],
+            [0, -MINO_SIZE],
+            [-MINO_SIZE, -MINO_SIZE], [MINO_SIZE, -MINO_SIZE],
+            [-MINO_SIZE * 2, 0], [MINO_SIZE * 2, 0]
+        ];
+        for (const [nx, ny] of nudgeOffsets) {
+            if (!this.collides(grid, nx, ny)) {
                 this.x += nx;
+                this.y += ny;
                 nudged = true;
                 break;
             }
@@ -1030,6 +1037,14 @@ class SandEngine {
         this.lockTimer = 0;
         this.isSoftDropping = false;
 
+        // Immediate sand cascade burst: ensures newly-deposited grains drop
+        // all the way to the bottom of the grid or onto resting mounds immediately
+        if (!this.isClassicGrid()) {
+            for (let s = 0; s < 10; s++) {
+                this.updatePhysics();
+            }
+        }
+
         // Check danger ceiling breach
         if (this.checkDangerCeiling()) {
             this.gameOver = true;
@@ -1084,18 +1099,29 @@ class SandEngine {
 
     triggerEarthquake() {
         if (this.isClassicGrid()) return;
-        for (let y = BOARD_HEIGHT - 2; y >= 20; y--) {
+        // Only disturb resting sand mounds in lower portion of the board,
+        // avoiding scattering airborne grains in the upper active drop area
+        const startY = Math.max(BOARD_HEIGHT - 35, 95);
+        for (let y = BOARD_HEIGHT - 2; y >= startY; y--) {
             for (let x = 0; x < BOARD_WIDTH; x++) {
                 const c = this.grid[y * BOARD_WIDTH + x];
-                if (c > 0 && Math.random() < 0.25) {
+                if (c > 0 && Math.random() < 0.20) {
                     const dir = Math.random() < 0.5 ? -1 : 1;
                     const nx = x + dir;
+                    // Only move if destination has a resting surface below it to prevent mid-air airborne particles
                     if (nx >= 0 && nx < BOARD_WIDTH && this.grid[y * BOARD_WIDTH + nx] === 0) {
-                        this.grid[y * BOARD_WIDTH + nx] = c;
-                        this.grid[y * BOARD_WIDTH + x] = 0;
+                        const hasFloorOrSupport = (y === BOARD_HEIGHT - 1) || (this.grid[(y + 1) * BOARD_WIDTH + nx] !== MATERIAL_EMPTY);
+                        if (hasFloorOrSupport) {
+                            this.grid[y * BOARD_WIDTH + nx] = c;
+                            this.grid[y * BOARD_WIDTH + x] = 0;
+                        }
                     }
                 }
             }
+        }
+        // Rapidly settle any perturbed grains
+        for (let s = 0; s < 4; s++) {
+            this.updatePhysics();
         }
     }
 
@@ -1440,7 +1466,7 @@ class SandEngine {
                         const drOk = (drVal === MATERIAL_EMPTY || drVal === MATERIAL_WATER || drVal === MATERIAL_DILUTED_ACID);
 
                         if (dlOk || drOk) {
-                            const slideChance = strongTilt ? 0.80 : (preferLeft || preferRight ? 0.45 : 0.08);
+                            const slideChance = strongTilt ? 0.85 : (preferLeft || preferRight ? 0.55 : 0.28);
                             if (Math.random() < slideChance) {
                                 if (dlOk && drOk) {
                                     const nx = preferLeft ? (x - 1) : (preferRight ? (x + 1) : (Math.random() < 0.5 ? x - 1 : x + 1));
@@ -1765,6 +1791,7 @@ class SandEngine {
                     const newShape = shapesPool[Math.floor(Math.random() * shapesPool.length)];
                     if (newShape !== this.activePiece.shape) {
                         if (this.activePiece.morphTo(newShape, this.grid)) {
+                            this.lockTimer = 0; // Reset lock timer so morphed piece never locks mid-air
                             tickResult.shapeShifted = true;
                             tickResult.newShape = newShape;
                             tickResult.roast = (this.mode === 'troll_classic') ? getRandomTrollRoast('morph') : getRandomMysteryHype('morph');
@@ -1786,7 +1813,7 @@ class SandEngine {
         this.gravityTimer += dtMs;
         const maxStepsPerFrame = this.isClassicGrid() ? 1 : 12;
         let stepsTaken = 0;
-        const lockDelayMs = this.isClassicGrid() ? 450 : 0;
+        const lockDelayMs = this.isClassicGrid() ? 450 : 140;
 
         while (this.gravityTimer >= targetInterval && stepsTaken < maxStepsPerFrame) {
             this.gravityTimer -= targetInterval;
@@ -1796,9 +1823,7 @@ class SandEngine {
                 const dy = this.isClassicGrid() ? MINO_SIZE : 1;
                 if (!this.activePiece.tryMove(0, dy, this.grid)) {
                     this.lockTimer += targetInterval;
-                    const canLock = this.isClassicGrid()
-                        ? (this.lockTimer >= lockDelayMs)
-                        : (this.lockTimer >= lockDelayMs || this.isSoftDropping);
+                    const canLock = (this.lockTimer >= lockDelayMs || this.isSoftDropping);
                     if (canLock) {
                         const lockEvent = this.lockActivePiece();
                         Object.assign(tickResult, lockEvent);
@@ -1818,7 +1843,8 @@ class SandEngine {
 
         // Physics Sub-steps (Sandtrix & Mystery Modes)
         if (!this.isClassicGrid()) {
-            for (let substep = 0; substep < 2; substep++) {
+            const substeps = this.isSoftDropping ? 6 : 4;
+            for (let substep = 0; substep < substeps; substep++) {
                 const physRes = this.updatePhysics();
                 if (physRes && physRes.acidCorroded && physRes.acidCorroded.length > 0) {
                     tickResult.acidCorroded = physRes.acidCorroded;

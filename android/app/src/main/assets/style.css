@@ -344,6 +344,61 @@ canvas#gameCanvas {
     touch-action: none;
 }
 
+/* Sleek Mystery & Troll Mode Event Banner */
+.troll-roast-banner {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translate(-50%, -12px) scale(0.85);
+    max-width: 90%;
+    width: auto;
+    white-space: nowrap;
+    padding: 7px 16px;
+    border-radius: 20px;
+    background: rgba(18, 22, 34, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(255, 184, 48, 0.6);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(255, 184, 48, 0.35);
+    color: #FFFFFF;
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.22s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.troll-roast-banner.pop {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+}
+
+.troll-roast-banner.roast-calamity {
+    border-color: rgba(255, 75, 75, 0.8);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(255, 75, 75, 0.45);
+    color: #FFD4D9;
+}
+
+.troll-roast-banner.roast-shift {
+    border-color: rgba(245, 185, 35, 0.85);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(245, 185, 35, 0.45);
+    color: #FFF2C6;
+}
+
+.troll-roast-banner.roast-combo {
+    border-color: rgba(72, 202, 228, 0.85);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(72, 202, 228, 0.45);
+    color: #E2F9FF;
+}
+
 /* Touch Control Buttons */
 .controls-panel {
     width: 100%;
