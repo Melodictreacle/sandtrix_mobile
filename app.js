@@ -470,38 +470,59 @@ class SandtrixApp {
             });
         }
 
-        // Level Picker
-        const updateLevelDesc = (lvl) => {
-            if (!lblLevelDesc) return;
+        // Level / Difficulty Pickers (Main Menu & Settings Modal)
+        const menuLevelPickerGrid = document.getElementById('menuLevelPickerGrid');
+        const menuLevelDesc = document.getElementById('menuLevelDesc');
+
+        const updateAllLevelDescs = (lvl) => {
             let tag = 'NORMAL';
-            if (lvl >= 8) tag = 'EXTREME';
+            if (lvl === 10) tag = 'HYPER';
+            else if (lvl >= 8) tag = 'EXTREME';
             else if (lvl >= 5) tag = 'FAST';
             else if (lvl >= 3) tag = 'MODERATE';
-            lblLevelDesc.innerText = `LEVEL ${lvl} (${tag})`;
+
+            const txt = `LVL ${lvl} (${tag})`;
+            if (lblLevelDesc) lblLevelDesc.innerText = `LEVEL ${lvl} (${tag})`;
+            if (menuLevelDesc) menuLevelDesc.innerText = txt;
         };
 
-        if (levelPickerGrid) {
-            levelPickerGrid.innerHTML = '';
+        const syncLevelButtons = (targetLvl) => {
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                const bLvl = parseInt(btn.getAttribute('data-level') || '1', 10);
+                if (bLvl === targetLvl) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            updateAllLevelDescs(targetLvl);
+        };
+
+        const createLevelButtons = (gridEl) => {
+            if (!gridEl) return;
+            gridEl.innerHTML = '';
             for (let i = 1; i <= 10; i++) {
                 const btn = document.createElement('button');
                 btn.className = `level-btn ${i === this.startLevel ? 'active' : ''}`;
+                btn.setAttribute('data-level', i.toString());
                 btn.innerText = i.toString();
                 btn.addEventListener('click', () => {
                     this.sound.init();
                     this.sound.playMove();
                     this.startLevel = i;
                     localStorage.setItem('sandtrix_start_level', i.toString());
-                    levelPickerGrid.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    updateLevelDesc(i);
+                    syncLevelButtons(i);
                     if (!this.gameStarted || this.engine.gameOver) {
                         this.restartGame();
                     }
                 });
-                levelPickerGrid.appendChild(btn);
+                gridEl.appendChild(btn);
             }
-            updateLevelDesc(this.startLevel);
-        }
+        };
+
+        createLevelButtons(menuLevelPickerGrid);
+        createLevelButtons(levelPickerGrid);
+        updateAllLevelDescs(this.startLevel);
 
         // Pause & Restart
         const btnRestart = document.getElementById('btnRestart');
