@@ -558,7 +558,11 @@ class SandtrixApp {
         this.engine.paused = isPaused;
         const btnPause = document.getElementById('btnPause');
         if (btnPause) {
-            btnPause.innerText = isPaused ? 'RESUME' : 'PAUSE';
+            const pauseIcon = `<svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="3.5" height="14" rx="1.5"/><rect x="14.5" y="5" width="3.5" height="14" rx="1.5"/></svg>`;
+            const playIcon = `<svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,4 19,12 7,20"/></svg>`;
+            btnPause.innerHTML = isPaused ? playIcon : pauseIcon;
+            btnPause.setAttribute('title', isPaused ? 'Resume Game' : 'Pause Game');
+            btnPause.setAttribute('aria-label', isPaused ? 'Resume Game' : 'Pause Game');
             if (isPaused) {
                 btnPause.classList.add('paused-state');
             } else {
