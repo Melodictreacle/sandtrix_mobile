@@ -1,10 +1,10 @@
 /**
- * Sandtrix Mobile Main Controller
- * - 60 FPS Game Loop
- * - Gyroscope & Motion Sensor Handling (Tilt steering, Tilt gravity, Shake to drop)
- * - Mobile Touch Gestures & Virtual On-Screen Controls
- * - Canvas Direct Image Buffer Blitting
- * - Particle Effects & Floating Troll Roasts
+ * Sandtrix Mobile Application Coordinator & Canvas Renderer
+ * - Full 4 Game Modes: Sandtrix, Classic Tetris, Mystery Sandtrix, Troll Classic
+ * - Elemental Cellular Automata Visuals & Sound Integration
+ * - Mission Line Goals (Endless, 20L, 40L, 100L) with Victory Overlay
+ * - Advanced Run Metrics: PPS, KPS, KPP, Lines Per Piece, Accuracy
+ * - Gyroscope & Accelerometer hardware integration + virtual touch controls
  */
 
 class ParticleSystem {
@@ -63,13 +63,21 @@ class ParticleSystem {
                 y: pt.y * 5,
                 vx: (Math.random() - 0.5) * 1.5,
                 vy: -1.0 - Math.random() * 2.0,
-                color: '#C8FF00',
+                color: '#CDEB2D',
                 size: 1.5 + Math.random() * 2.0,
                 alpha: 1.0,
                 life: 20,
                 maxLife: 20
             });
         }
+    }
+
+    addIceShatter(coords) {
+        this.addSparks(coords, '#99E6FF', 2);
+    }
+
+    addFireBurst(coords) {
+        this.addSparks(coords, '#FF4500', 2);
     }
 
     addFloatingText(x, y, text, color = '#FFD700', fontSize = 16) {
@@ -87,19 +95,17 @@ class ParticleSystem {
     }
 
     update() {
-        // Update sparks
         for (let i = this.sparks.length - 1; i >= 0; i--) {
             const p = this.sparks[i];
             p.x += p.vx;
             p.y += p.vy;
-            p.vy += 0.15; // Gravity
+            p.vy += 0.15;
             p.vx *= 0.98;
             p.life--;
             p.alpha = p.life / p.maxLife;
             if (p.life <= 0) this.sparks.splice(i, 1);
         }
 
-        // Update floating texts
         for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
             const t = this.floatingTexts[i];
             t.y += t.vy;
@@ -108,7 +114,6 @@ class ParticleSystem {
             if (t.life <= 0) this.floatingTexts.splice(i, 1);
         }
 
-        // Decay screen shake
         let shakeX = 0, shakeY = 0;
         if (this.shakeIntensity > 0.1) {
             shakeX = (Math.random() * 2 - 1) * this.shakeIntensity;
@@ -122,7 +127,6 @@ class ParticleSystem {
     }
 
     draw(ctx) {
-        // Draw sparks
         for (const p of this.sparks) {
             ctx.save();
             ctx.globalAlpha = p.alpha;
@@ -133,11 +137,10 @@ class ParticleSystem {
             ctx.restore();
         }
 
-        // Draw floating texts
         for (const t of this.floatingTexts) {
             ctx.save();
             ctx.globalAlpha = t.alpha;
-            ctx.font = `bold ${t.fontSize}px 'Segoe UI', system-ui, sans-serif`;
+            ctx.font = `bold ${t.fontSize}px 'Nunito', 'Segoe UI', system-ui, sans-serif`;
             ctx.textAlign = 'center';
             ctx.fillStyle = t.color;
             ctx.shadowColor = '#000000';
@@ -159,33 +162,41 @@ class SandtrixApp {
         this.canvas.width = 400;
         this.canvas.height = 700;
 
-        // Image data buffer for high-speed canvas blitting
         this.imageData = this.ctx.createImageData(BOARD_WIDTH, BOARD_HEIGHT);
         this.pixelBuf = new Uint32Array(this.imageData.data.buffer);
 
         // Precompute color palette 32-bit hex values (ABGR format for little-endian Uint32Array)
         this.colorABGR = {
-            0: 0xFF261B16,  // #161B26 (Cozy Deep Slate)
-            1: 0xFF786DF2,  // #F26D78 (Soft Coral Rose)
-            2: 0xFF53C4F6,  // #F6C453 (Warm Honey Amber)
-            3: 0xFFA3CC4E,  // #4ECCA3 (Pastel Mint Jade)
-            4: 0xFFE5925B,  // #5B92E5 (Soft Periwinkle Sky)
-            5: 0xFFF18D9D,  // #9D8DF1 (Soft Lavender Purple)
-            6: 0xFF439FFF,  // #FF9F43 (Pastel Tangerine Orange)
-            50: 0xFFC79600, // #0096C7 (Crystal Sapphire Ocean Blue - Water)
-            51: 0xFF00FFC8, // #C8FF00 (Radioactive Toxic Chartreuse - Acid)
-            52: 0xFF6B6BFF  // #FF6B6B (Soft Blush Crimson)
+            0:  0xFF1C1512,  // #12151C (Deep Slate Background)
+            1:  0xFF4B4BEB,  // #EB4B4B (Crimson Ruby)
+            2:  0xFF23B9F5,  // #F5B923 (Amber Gold)
+            3:  0xFF64B928,  // #28B964 (Emerald Jade)
+            4:  0xFFEB7D32,  // #327DEB (Sapphire Blue)
+            5:  0xFFF18D9D,  // #9D8DF1 (Soft Lavender Purple)
+            6:  0xFF439FFF,  // #FF9F43 (Pastel Tangerine Orange)
+            50: 0xFFD7D200,  // #00D2D7 (Turquoise Aqua - Water)
+            51: 0xFF2DEBCD,  // #CDEB2D (Chartreuse Lime - Acid)
+            52: 0xFF4B4BFF,  // #FF4B4B (TNT Red - Bomb)
+            53: 0xFFFFE699,  // #99E6FF (Glacial Frost Blue - Ice)
+            54: 0xFF0045FF,  // #FF4500 (Blazing Fiery Orange - Fire)
+            55: 0xD0F5EBE1,  // #E1EBF5 (Soft Mist White-Blue - Steam)
+            56: 0xE014FF39,  // #39FF14 (Radioactive Neon Green - Toxic Gas)
+            57: 0xFF96908A,  // #8A9096 (Charcoal Ash Gray - Ash)
+            58: 0xFFCCE418   // #18E4CC (Shimmering Aquamarine - Diluted Acid)
         };
 
-        // Engine State & Initial Preferences
+        // Engine State & Preferences
         this.menuSelectedMode = localStorage.getItem('sandtrix_mode') || 'sandtrix';
         this.currentMode = this.menuSelectedMode;
-        this.enableElements = true;
+        this.enableElements = localStorage.getItem('sandtrix_elements') !== 'false';
         this.startLevel = parseInt(localStorage.getItem('sandtrix_start_level') || '1', 10);
-        this.engine = new SandEngine(this.currentMode, this.enableElements, this.startLevel);
-        this.engine.paused = true; // Paused until user taps START GAME in menu
+        this.lineGoal = parseInt(localStorage.getItem('sandtrix_line_goal') || '0', 10);
+
+        this.engine = new SandEngine(this.currentMode, this.enableElements, this.startLevel, this.lineGoal);
+        this.engine.paused = true;
         this.gameStarted = false;
         this.gameOverDisplayed = false;
+        this.victoryDisplayed = false;
 
         // Gyroscope / Motion Sensor State
         this.gyroEnabled = localStorage.getItem('sandtrix_gyro') !== 'false';
@@ -205,10 +216,10 @@ class SandtrixApp {
 
         this.currentPage = 'menu';
 
-        // Native Hardware & Browser Back Button Bridge
+        // Android / Browser Back Button Bridge
         window.onNativeBackPress = () => this.handleBackPress();
         window.addEventListener('popstate', () => {
-            if (this.currentPage === 'game' && this.gameStarted && !this.engine.gameOver) {
+            if (this.currentPage === 'game' && this.gameStarted && !this.engine.gameOver && !this.engine.missionCompleted) {
                 if (!this.engine.paused) {
                     try { history.pushState({ page: 'game', paused: true }, ''); } catch (e) {}
                     this.setPaused(true);
@@ -224,46 +235,40 @@ class SandtrixApp {
         this.initTouchControls();
         this.initKeyboard();
 
-        // Start game loop
         requestAnimationFrame((t) => this.gameLoop(t));
     }
 
     initDOM() {
-        // Menu Elements
-        const menuSandtrix = document.getElementById('menuModeSandtrix');
-        const menuTroll = document.getElementById('menuModeTroll');
-        const chkGyro = document.getElementById('chkMenuGyro');
-        const btnStart = document.getElementById('btnStartGame');
-        const btnBackToMenu = document.getElementById('btnBackToMenu');
-        const btnGameRestart = document.getElementById('btnGameRestart');
-        const btnGameOverMenu = document.getElementById('btnGameOverMenu');
-
-        const updateMenuCards = () => {
-            if (this.menuSelectedMode === 'sandtrix') {
-                if (menuSandtrix) menuSandtrix.classList.add('active');
-                if (menuTroll) menuTroll.classList.remove('active');
-            } else {
-                if (menuTroll) menuTroll.classList.add('active');
-                if (menuSandtrix) menuSandtrix.classList.remove('active');
-            }
+        const modeCards = {
+            'sandtrix': document.getElementById('menuModeSandtrix'),
+            'classic': document.getElementById('menuModeClassic'),
+            'mystery': document.getElementById('menuModeMystery'),
+            'troll_classic': document.getElementById('menuModeTroll')
         };
 
-        if (menuSandtrix) {
-            menuSandtrix.addEventListener('click', () => {
-                this.sound.init();
-                this.menuSelectedMode = 'sandtrix';
-                updateMenuCards();
+        const updateMenuCards = () => {
+            Object.entries(modeCards).forEach(([m, el]) => {
+                if (el) {
+                    if (this.menuSelectedMode === m) {
+                        el.classList.add('active');
+                    } else {
+                        el.classList.remove('active');
+                    }
+                }
             });
-        }
+        };
 
-        if (menuTroll) {
-            menuTroll.addEventListener('click', () => {
-                this.sound.init();
-                this.menuSelectedMode = 'troll_classic';
-                updateMenuCards();
-            });
-        }
+        Object.entries(modeCards).forEach(([m, el]) => {
+            if (el) {
+                el.addEventListener('click', () => {
+                    this.sound.init();
+                    this.menuSelectedMode = m;
+                    updateMenuCards();
+                });
+            }
+        });
 
+        const chkGyro = document.getElementById('chkMenuGyro');
         if (chkGyro) {
             chkGyro.checked = this.gyroEnabled;
             chkGyro.addEventListener('change', (e) => {
@@ -272,10 +277,41 @@ class SandtrixApp {
             });
         }
 
+        const chkElements = document.getElementById('chkMenuElements');
+        if (chkElements) {
+            chkElements.checked = this.enableElements;
+            chkElements.addEventListener('change', (e) => {
+                this.sound.init();
+                this.enableElements = e.target.checked;
+                localStorage.setItem('sandtrix_elements', this.enableElements.toString());
+                if (!this.gameStarted || this.engine.gameOver) {
+                    this.restartGame();
+                }
+            });
+        }
+
+        // Line Goal Selector in Menu
+        const goalPills = document.querySelectorAll('.goal-pill');
+        goalPills.forEach(pill => {
+            const goalVal = parseInt(pill.getAttribute('data-goal') || '0', 10);
+            if (goalVal === this.lineGoal) pill.classList.add('active');
+            pill.addEventListener('click', () => {
+                this.sound.init();
+                this.sound.playMove();
+                this.lineGoal = goalVal;
+                localStorage.setItem('sandtrix_line_goal', this.lineGoal.toString());
+                goalPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                if (!this.gameStarted || this.engine.gameOver) {
+                    this.restartGame();
+                }
+            });
+        });
+
+        const btnStart = document.getElementById('btnStartGame');
         if (btnStart) {
             btnStart.addEventListener('click', async () => {
                 this.sound.init();
-                // Request gyro permission on iOS if enabled
                 if (this.gyroEnabled && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     try {
                         const perm = await DeviceOrientationEvent.requestPermission();
@@ -287,7 +323,6 @@ class SandtrixApp {
                     }
                 }
 
-                // If mode changed or not started yet, switch mode
                 if (this.currentMode !== this.menuSelectedMode || !this.gameStarted) {
                     this.currentMode = this.menuSelectedMode;
                     localStorage.setItem('sandtrix_mode', this.currentMode);
@@ -297,10 +332,18 @@ class SandtrixApp {
                 this.setGyroEnabled(this.gyroEnabled);
                 this.gameStarted = true;
                 this.showPage('game');
-                this.showToast(`STARTED: ${this.currentMode === 'troll_classic' ? 'TROLL CLASSIC' : 'SANDTRIX'}`);
+                
+                const modeNames = {
+                    'sandtrix': 'SANDTRIX',
+                    'classic': 'CLASSIC TETRIS',
+                    'mystery': 'MYSTERY SANDTRIX',
+                    'troll_classic': 'TROLL CLASSIC'
+                };
+                this.showToast(`STARTED: ${modeNames[this.currentMode] || 'SANDTRIX'}`);
             });
         }
 
+        const btnBackToMenu = document.getElementById('btnBackToMenu');
         if (btnBackToMenu) {
             btnBackToMenu.addEventListener('click', () => {
                 this.sound.init();
@@ -308,12 +351,14 @@ class SandtrixApp {
             });
         }
 
+        const btnGameRestart = document.getElementById('btnGameRestart');
         if (btnGameRestart) {
             btnGameRestart.addEventListener('click', () => {
                 this.restartGame();
             });
         }
 
+        const btnGameOverMenu = document.getElementById('btnGameOverMenu');
         if (btnGameOverMenu) {
             btnGameOverMenu.addEventListener('click', () => {
                 this.sound.init();
@@ -323,7 +368,25 @@ class SandtrixApp {
             });
         }
 
-        // How To Play Modal Handlers
+        const btnVictoryMenu = document.getElementById('btnVictoryMenu');
+        if (btnVictoryMenu) {
+            btnVictoryMenu.addEventListener('click', () => {
+                this.sound.init();
+                this.hideVictoryOverlay();
+                this.gameStarted = false;
+                this.showPage('menu');
+            });
+        }
+
+        const btnVictoryRestart = document.getElementById('btnVictoryRestart');
+        if (btnVictoryRestart) {
+            btnVictoryRestart.addEventListener('click', () => {
+                this.hideVictoryOverlay();
+                this.restartGame();
+            });
+        }
+
+        // Modals: How To Play
         const modalHowToPlay = document.getElementById('howToPlayModal');
         const btnHowToPlay = document.getElementById('btnHowToPlay');
         const btnCloseHowToPlay = document.getElementById('btnCloseHowToPlay');
@@ -346,7 +409,7 @@ class SandtrixApp {
             });
         }
 
-        // Settings Modal Handlers
+        // Modals: Settings
         const modalSettings = document.getElementById('settingsModal');
         const btnSettings = document.getElementById('btnSettings');
         const btnCloseSettings = document.getElementById('btnCloseSettings');
@@ -359,12 +422,7 @@ class SandtrixApp {
         if (btnSettings && modalSettings) {
             btnSettings.addEventListener('click', () => {
                 this.sound.init();
-                const sandHigh = parseInt(localStorage.getItem('sandtrix_mobile_high_sandtrix') || '0', 10);
-                const trollHigh = parseInt(localStorage.getItem('sandtrix_mobile_high_troll') || '0', 10);
-                const elSand = document.getElementById('settingsHighSandtrix');
-                const elTroll = document.getElementById('settingsHighTroll');
-                if (elSand) elSand.innerText = sandHigh.toLocaleString();
-                if (elTroll) elTroll.innerText = trollHigh.toLocaleString();
+                this.syncSettingsHighScores();
                 modalSettings.style.display = 'flex';
             });
         }
@@ -373,22 +431,15 @@ class SandtrixApp {
         if (btnClearHighScores) {
             btnClearHighScores.addEventListener('click', () => {
                 this.sound.playClear();
-                localStorage.removeItem('sandtrix_mobile_high_sandtrix');
-                localStorage.removeItem('sandtrix_mobile_high_troll');
-                localStorage.removeItem('sandtrix_mobile_high');
+                ['sandtrix', 'classic', 'mystery', 'troll_classic', 'sandtrix_mobile_high'].forEach(k => {
+                    localStorage.removeItem(`sandtrix_mobile_high_${k}`);
+                    localStorage.removeItem(k);
+                });
 
-                if (this.engine) {
-                    this.engine.highScore = 0;
-                }
-
-                const elSand = document.getElementById('settingsHighSandtrix');
-                const elTroll = document.getElementById('settingsHighTroll');
-                if (elSand) elSand.innerText = '0';
-                if (elTroll) elTroll.innerText = '0';
-
+                if (this.engine) this.engine.highScore = 0;
+                this.syncSettingsHighScores();
                 const lblHighScore = document.getElementById('lblHighScore');
                 if (lblHighScore) lblHighScore.innerText = '0';
-
                 this.updateMenuHighScores();
                 this.showToast('HIGH SCORES CLEARED');
             });
@@ -405,7 +456,7 @@ class SandtrixApp {
             });
         }
 
-        // Volume Control Slider
+        // Volume slider
         if (sliderVolume && lblVolumeVal) {
             const currentVolPct = Math.round(this.sound.volume * 100);
             sliderVolume.value = currentVolPct;
@@ -419,7 +470,7 @@ class SandtrixApp {
             });
         }
 
-        // Level Selector Control
+        // Level Picker
         const updateLevelDesc = (lvl) => {
             if (!lblLevelDesc) return;
             let tag = 'NORMAL';
@@ -443,7 +494,6 @@ class SandtrixApp {
                     levelPickerGrid.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     updateLevelDesc(i);
-                    // If game not in progress, rebuild engine with chosen starting level
                     if (!this.gameStarted || this.engine.gameOver) {
                         this.restartGame();
                     }
@@ -453,18 +503,34 @@ class SandtrixApp {
             updateLevelDesc(this.startLevel);
         }
 
-        // In-game Restart & Pause
-        document.getElementById('btnRestart').addEventListener('click', () => this.restartGame());
-        document.getElementById('btnPause').addEventListener('click', () => {
-            const nextState = !this.engine.paused;
-            this.setPaused(nextState);
-            this.sound.init();
-            this.showToast(nextState ? 'PAUSED' : 'RESUMED');
-        });
+        // Pause & Restart
+        const btnRestart = document.getElementById('btnRestart');
+        if (btnRestart) btnRestart.addEventListener('click', () => this.restartGame());
+
+        const btnPause = document.getElementById('btnPause');
+        if (btnPause) {
+            btnPause.addEventListener('click', () => {
+                const nextState = !this.engine.paused;
+                this.setPaused(nextState);
+                this.sound.init();
+                this.showToast(nextState ? 'PAUSED' : 'RESUMED');
+            });
+        }
 
         updateMenuCards();
         this.setGyroEnabled(this.gyroEnabled);
         this.showPage('menu');
+    }
+
+    syncSettingsHighScores() {
+        const modes = ['sandtrix', 'classic', 'mystery', 'troll_classic'];
+        modes.forEach(m => {
+            const el = document.getElementById(`settingsHigh_${m}`);
+            if (el) {
+                const val = parseInt(localStorage.getItem(`sandtrix_mobile_high_${m}`) || '0', 10);
+                el.innerText = val.toLocaleString();
+            }
+        });
     }
 
     setPaused(isPaused) {
@@ -481,22 +547,18 @@ class SandtrixApp {
     }
 
     handleBackPress() {
-        // 1. Dismiss any open modal overlay
         const openModal = document.querySelector('.overlay.active');
         if (openModal) {
             openModal.classList.remove('active');
             return 'handled';
         }
 
-        // 2. If playing the game
-        if (this.currentPage === 'game' && this.gameStarted && !this.engine.gameOver) {
+        if (this.currentPage === 'game' && this.gameStarted && !this.engine.gameOver && !this.engine.missionCompleted) {
             if (!this.engine.paused) {
-                // First back press: pause the game, do NOT exit
                 this.setPaused(true);
                 this.showToast('PAUSED - Press Back again to exit');
                 return 'handled';
             } else {
-                // Second back press while already paused: exit/close app
                 if (window.AndroidApp && typeof window.AndroidApp.closeApp === 'function') {
                     window.AndroidApp.closeApp();
                 }
@@ -504,13 +566,11 @@ class SandtrixApp {
             }
         }
 
-        // 3. If game is over, return to main menu
-        if (this.currentPage === 'game' && this.engine.gameOver) {
+        if (this.currentPage === 'game' && (this.engine.gameOver || this.engine.missionCompleted)) {
             this.showPage('menu');
             return 'handled';
         }
 
-        // 4. If on the main menu, exit/close app
         if (this.currentPage === 'menu') {
             if (window.AndroidApp && typeof window.AndroidApp.closeApp === 'function') {
                 window.AndroidApp.closeApp();
@@ -522,12 +582,10 @@ class SandtrixApp {
     }
 
     updateMenuHighScores() {
-        const sandHigh = parseInt(localStorage.getItem('sandtrix_mobile_high_sandtrix') || '0', 10);
-        const trollHigh = parseInt(localStorage.getItem('sandtrix_mobile_high_troll') || '0', 10);
-        const elSand = document.getElementById('menuHighScoreSandtrix');
-        const elTroll = document.getElementById('menuHighScoreTroll');
-        if (elSand) elSand.innerText = sandHigh.toLocaleString();
-        if (elTroll) elTroll.innerText = trollHigh.toLocaleString();
+        const hsKey = `sandtrix_mobile_high_${this.currentMode}`;
+        const val = parseInt(localStorage.getItem(hsKey) || '0', 10);
+        const el = document.getElementById('lblHighScore');
+        if (el) el.innerText = val.toLocaleString();
     }
 
     showPage(page) {
@@ -538,11 +596,12 @@ class SandtrixApp {
 
         if (page === 'menu') {
             this.gameOverDisplayed = false;
+            this.victoryDisplayed = false;
             if (pageMenu) pageMenu.classList.add('active');
             if (pageGame) pageGame.classList.remove('active');
             this.setPaused(true);
             if (btnStart) {
-                btnStart.innerText = (this.gameStarted && !this.engine.gameOver) ? 'RESUME GAME' : 'START GAME';
+                btnStart.innerText = (this.gameStarted && !this.engine.gameOver && !this.engine.missionCompleted) ? 'RESUME GAME' : 'START GAME';
             }
             this.updateMenuHighScores();
         } else {
@@ -599,29 +658,33 @@ class SandtrixApp {
         this.currentMode = mode;
         this.menuSelectedMode = mode;
         this.gameOverDisplayed = false;
+        this.victoryDisplayed = false;
         localStorage.setItem('sandtrix_mode', mode);
-        this.engine = new SandEngine(this.currentMode, this.enableElements, this.startLevel);
+        this.engine = new SandEngine(this.currentMode, this.enableElements, this.startLevel, this.lineGoal);
         this.restartGame();
 
         const gameModePill = document.getElementById('gameModePill');
         if (gameModePill) {
-            if (mode === 'sandtrix') {
-                gameModePill.innerText = 'SANDTRIX';
-                gameModePill.style.color = '#48CAE4';
-                gameModePill.style.borderColor = 'rgba(72, 202, 228, 0.4)';
-            } else {
-                gameModePill.innerText = 'TROLL';
-                gameModePill.style.color = '#F26D78';
-                gameModePill.style.borderColor = 'rgba(242, 109, 120, 0.4)';
-            }
+            const pillInfo = {
+                'sandtrix':      { label: 'SANDTRIX', color: '#00D2D7' },
+                'classic':       { label: 'CLASSIC',  color: '#28B964' },
+                'mystery':       { label: 'MYSTERY',  color: '#F5B923' },
+                'troll_classic': { label: 'TROLL',    color: '#FF4B4B' }
+            }[mode] || { label: 'SANDTRIX', color: '#00D2D7' };
+
+            gameModePill.innerText = pillInfo.label;
+            gameModePill.style.color = pillInfo.color;
+            gameModePill.style.borderColor = pillInfo.color;
         }
     }
 
     restartGame() {
         this.sound.init();
         this.gameOverDisplayed = false;
-        this.engine = new SandEngine(this.currentMode, this.enableElements, this.startLevel);
+        this.victoryDisplayed = false;
+        this.engine = new SandEngine(this.currentMode, this.enableElements, this.startLevel, this.lineGoal);
         this.hideGameOverOverlay();
+        this.hideVictoryOverlay();
     }
 
     showToast(msg) {
@@ -643,289 +706,273 @@ class SandtrixApp {
         this.particles.addFloatingText(200, 260, msg, '#FF4B4B', 16);
     }
 
-    // ==========================================
-    // Gyroscope & Motion Sensor Architecture
-    // ==========================================
-    // ==========================================
-    // Gyroscope & Motion Sensor Architecture
-    // ==========================================
+    // Sensors
     initSensors() {
-        // Expose Native Android Bridge (called from Android Java SensorManager)
         window.onNativeGyro = (roll, pitch, rotSpeed) => {
-            this.handleOrientation(roll, pitch, rotSpeed);
+            this.handleOrientation(roll, pitch);
+            if (Math.abs(rotSpeed) > 380) {
+                const now = performance.now();
+                if (now - this.lastShakeTime > 750) {
+                    this.lastShakeTime = now;
+                    this.onShakeGesture();
+                }
+            }
         };
 
-        // iOS 13+ requires explicit user interaction permission for DeviceOrientation
-        const requestPermissionBtn = document.getElementById('btnRequestGyro');
-        if (requestPermissionBtn) {
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                requestPermissionBtn.style.display = 'block';
-                requestPermissionBtn.addEventListener('click', async () => {
-                    try {
-                        const response = await DeviceOrientationEvent.requestPermission();
-                        if (response === 'granted') {
-                            this.bindOrientationListeners();
-                            requestPermissionBtn.style.display = 'none';
-                            this.showToast('MOTION SENSORS ACTIVE!');
-                        }
-                    } catch (e) {
-                        console.error('Gyro permission error', e);
-                    }
-                });
-            } else {
-                requestPermissionBtn.style.display = 'none';
-                this.bindOrientationListeners();
-            }
-        } else {
+        if (window.DeviceOrientationEvent) {
             this.bindOrientationListeners();
         }
-    }
 
-    bindOrientationListeners() {
-        // 1. Standard DeviceOrientation (gamma = roll, beta = pitch)
-        window.addEventListener('deviceorientation', (e) => {
-            if (e.gamma !== null && e.gamma !== undefined) {
-                this.handleOrientation(e.gamma, e.beta || 0);
-            }
-        });
-
-        // 2. Absolute DeviceOrientation
-        window.addEventListener('deviceorientationabsolute', (e) => {
-            if (e.gamma !== null && e.gamma !== undefined) {
-                this.handleOrientation(e.gamma, e.beta || 0);
-            }
-        });
-
-        // 3. Acceleration & Rotation Rate via DeviceMotion
         if (window.DeviceMotionEvent) {
             window.addEventListener('devicemotion', (e) => {
-                const acc = e.accelerationIncludingGravity;
-                if (acc && (!this.sensorActive || !this.currentRoll)) {
-                    // Fallback to accelerometer angle if deviceorientation was blocked
-                    const ax = acc.x || 0;
-                    const ay = acc.y || 0;
-                    const az = acc.z || 0;
-                    const roll = Math.atan2(ax, Math.sqrt(ay * ay + az * az)) * (180 / Math.PI);
-                    const pitch = Math.atan2(ay, az) * (180 / Math.PI);
-                    this.handleOrientation(-roll, pitch);
-                }
-
-                // Shake detection threshold (> 23 m/s^2) for Hard Drop
-                if (acc) {
-                    const totalAcc = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+                const acc = e.accelerationIncludingGravity || e.acceleration;
+                if (!acc) return;
+                const mag = Math.sqrt((acc.x || 0) ** 2 + (acc.y || 0) ** 2 + (acc.z || 0) ** 2);
+                if (mag > 26) {
                     const now = performance.now();
-                    if (totalAcc > 23 && now - this.lastShakeTime > 750) {
+                    if (now - this.lastShakeTime > 900) {
                         this.lastShakeTime = now;
                         this.onShakeGesture();
                     }
                 }
-            });
+            }, false);
         }
+    }
+
+    bindOrientationListeners() {
+        window.addEventListener('deviceorientation', (e) => {
+            if (e.gamma !== null && e.beta !== null) {
+                this.handleOrientation(e.gamma, e.beta);
+            }
+        }, false);
     }
 
     handleOrientation(roll, pitch) {
         if (!this.gyroEnabled) return;
-
-        if (!this.sensorActive) {
-            this.sensorActive = true;
-        }
-
         const effectiveRoll = roll - this.calibratedRollOffset;
-
-        // Exponential Moving Average (EMA) low-pass filter
-        // 0.22 response factor provides snappy reaction while eliminating sensor jitter
         this.smoothedRoll = (this.smoothedRoll * 0.78) + (effectiveRoll * 0.22);
         this.smoothedPitch = (this.smoothedPitch * 0.78) + (pitch * 0.22);
-
         this.currentRoll = this.smoothedRoll;
         this.currentPitch = this.smoothedPitch;
-
-        // Feed filtered tilt into physics engine (fluid sloshing and granular tilt gravity)
         this.engine.setTilt(this.smoothedRoll);
     }
 
     onShakeGesture() {
-        if (this.engine.gameOver || this.engine.paused) return;
+        if (this.engine.gameOver || this.engine.missionCompleted || this.engine.paused) return;
 
-        // In Troll Mode: Roast the user for violent shaking
         if (this.currentMode === 'troll_classic') {
             this.showTrollRoast(getRandomTrollRoast('shakeRoast'));
         }
 
-        // Trigger Hard Drop
         const dropEv = this.engine.hardDrop();
         if (dropEv) {
             this.sound.playDrop();
             this.particles.triggerShake(9);
-            if (navigator.vibrate) navigator.vibrate(40); // Haptic feedback
+            if (navigator.vibrate) navigator.vibrate(40);
             this.handleTickEvents(dropEv);
         }
     }
 
-    // ==========================================
-    // Touch Controls & Gesture Gestures
-    // ==========================================
+    processGyroSteering(dtMs) {
+        if (!this.gyroEnabled || !this.engine.activePiece) return;
+
+        const deadzone = 7.0;
+        const roll = this.smoothedRoll;
+
+        if (Math.abs(roll) > deadzone) {
+            const dir = (roll > 0) ? 1 : -1;
+            const excess = Math.abs(roll) - deadzone;
+            const rate = Math.min(1.0, excess / 28.0);
+            const interval = 220 - (rate * 140); // 220ms down to 80ms
+
+            this.steerAccumulator += dtMs;
+            if (this.steerAccumulator >= interval) {
+                this.steerAccumulator = 0;
+                if (this.engine.movePiece(dir)) {
+                    this.sound.playMove();
+                }
+            }
+        } else {
+            this.steerAccumulator = 0;
+        }
+    }
+
+    // Touch controls
     initTouchControls() {
-        // Virtual Buttons
-        const bindBtn = (id, action) => {
+        const bindBtn = (id, action, repeat = false) => {
             const btn = document.getElementById(id);
             if (!btn) return;
-            const handler = (e) => {
-                e.preventDefault();
+
+            let repTimer = null;
+            let repInterval = null;
+
+            const trigger = () => {
                 this.sound.init();
                 action();
             };
-            btn.addEventListener('touchstart', handler, { passive: false });
-            btn.addEventListener('mousedown', handler);
+
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                btn.classList.add('pressed');
+                trigger();
+
+                if (repeat) {
+                    repTimer = setTimeout(() => {
+                        repInterval = setInterval(trigger, 40);
+                    }, 140);
+                }
+            }, { passive: false });
+
+            const stopRepeat = () => {
+                btn.classList.remove('pressed');
+                if (repTimer) clearTimeout(repTimer);
+                if (repInterval) clearInterval(repInterval);
+                repTimer = null;
+                repInterval = null;
+            };
+
+            btn.addEventListener('touchend', stopRepeat);
+            btn.addEventListener('touchcancel', stopRepeat);
+            btn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                btn.classList.add('pressed');
+                trigger();
+            });
+            btn.addEventListener('mouseup', () => btn.classList.remove('pressed'));
+            btn.addEventListener('mouseleave', () => btn.classList.remove('pressed'));
         };
 
         bindBtn('btnHold', () => {
-            if (this.engine.holdCurrentPiece()) {
-                this.sound.playMove();
-            }
+            if (this.engine.holdCurrentPiece()) this.sound.playLock();
         });
-
         bindBtn('btnRotCW', () => {
-            if (this.engine.rotatePiece(1)) {
-                this.sound.playRotate();
-            }
+            if (this.engine.rotatePiece(1)) this.sound.playRotate();
         });
-
         bindBtn('btnRotCCW', () => {
-            if (this.engine.rotatePiece(-1)) {
-                this.sound.playRotate();
-            }
+            if (this.engine.rotatePiece(-1)) this.sound.playRotate();
         });
-
         bindBtn('btnLeft', () => {
-            if (this.engine.movePiece(-1)) {
-                this.sound.playMove();
-            }
-        });
-
+            if (this.engine.movePiece(-1)) this.sound.playMove();
+        }, true);
         bindBtn('btnRight', () => {
-            if (this.engine.movePiece(1)) {
-                this.sound.playMove();
-            }
-        });
-
+            if (this.engine.movePiece(1)) this.sound.playMove();
+        }, true);
         bindBtn('btnSoftDrop', () => {
+            this.engine.registerInput();
             this.engine.isSoftDropping = true;
-            setTimeout(() => { this.engine.isSoftDropping = false; }, 200);
-        });
-
+        }, true);
         bindBtn('btnHardDrop', () => {
-            const dropEv = this.engine.hardDrop();
-            if (dropEv) {
+            const ev = this.engine.hardDrop();
+            if (ev) {
                 this.sound.playDrop();
                 this.particles.triggerShake(7);
                 if (navigator.vibrate) navigator.vibrate(30);
-                this.handleTickEvents(dropEv);
+                this.handleTickEvents(ev);
             }
         });
 
-        // Touch Gestures on Canvas
+        const btnSoftDrop = document.getElementById('btnSoftDrop');
+        if (btnSoftDrop) {
+            const stopDrop = () => { this.engine.isSoftDropping = false; };
+            btnSoftDrop.addEventListener('touchend', stopDrop);
+            btnSoftDrop.addEventListener('touchcancel', stopDrop);
+            btnSoftDrop.addEventListener('mouseup', stopDrop);
+            btnSoftDrop.addEventListener('mouseleave', stopDrop);
+        }
+
+        // Canvas gestures
         this.canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.sound.init();
-            if (e.touches.length > 0) {
+            if (e.touches.length === 1) {
                 this.touchStartX = e.touches[0].clientX;
                 this.touchStartY = e.touches[0].clientY;
                 this.isSwiping = false;
             }
-        }, { passive: false });
+        }, { passive: true });
 
         this.canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (e.touches.length > 0) {
-                const curX = e.touches[0].clientX;
-                const curY = e.touches[0].clientY;
-                const dx = curX - this.touchStartX;
-                const dy = curY - this.touchStartY;
+            if (e.touches.length === 1) {
+                const dx = e.touches[0].clientX - this.touchStartX;
+                const dy = e.touches[0].clientY - this.touchStartY;
 
-                // Horizontal drag nudges piece
-                if (Math.abs(dx) > 30) {
+                if (!this.gyroEnabled && Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy)) {
+                    this.isSwiping = true;
                     const dir = dx > 0 ? 1 : -1;
-                    if (this.engine.movePiece(dir)) {
-                        this.sound.playMove();
-                    }
-                    this.touchStartX = curX;
+                    if (this.engine.movePiece(dir)) this.sound.playMove();
+                    this.touchStartX = e.touches[0].clientX;
+                } else if (dy > 35 && Math.abs(dy) > Math.abs(dx)) {
                     this.isSwiping = true;
-                }
-
-                // Vertical swipe down soft drops
-                if (dy > 45) {
+                    this.engine.registerInput();
                     this.engine.isSoftDropping = true;
-                    this.touchStartY = curY;
-                    this.isSwiping = true;
                 }
             }
-        }, { passive: false });
+        }, { passive: true });
 
-        this.canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
+        this.canvas.addEventListener('touchend', () => {
             this.engine.isSoftDropping = false;
             if (!this.isSwiping) {
-                // If game is currently paused, tapping the playfield resumes the game!
-                if (this.engine.paused && this.currentPage === 'game' && !this.engine.gameOver) {
-                    this.setPaused(false);
-                    this.sound.playRotate();
-                    this.showToast('RESUMED');
-                    return;
-                }
-                // Quick Tap on Canvas = Rotate Clockwise!
-                if (this.engine.rotatePiece(1)) {
-                    this.sound.playRotate();
-                }
+                if (this.engine.rotatePiece(1)) this.sound.playRotate();
             }
-        }, { passive: false });
+        }, { passive: true });
     }
 
+    // Keyboard controls
     initKeyboard() {
         window.addEventListener('keydown', (e) => {
+            if (this.currentPage !== 'game' || this.engine.gameOver || this.engine.missionCompleted) return;
             this.sound.init();
+
             switch (e.code) {
                 case 'ArrowLeft':
                 case 'KeyA':
                     if (this.engine.movePiece(-1)) this.sound.playMove();
+                    e.preventDefault();
                     break;
                 case 'ArrowRight':
                 case 'KeyD':
                     if (this.engine.movePiece(1)) this.sound.playMove();
+                    e.preventDefault();
                     break;
                 case 'ArrowUp':
                 case 'KeyW':
                 case 'KeyX':
                     if (this.engine.rotatePiece(1)) this.sound.playRotate();
+                    e.preventDefault();
                     break;
                 case 'KeyZ':
                 case 'ControlLeft':
+                case 'ControlRight':
                     if (this.engine.rotatePiece(-1)) this.sound.playRotate();
+                    e.preventDefault();
                     break;
                 case 'ArrowDown':
                 case 'KeyS':
+                    this.engine.registerInput();
                     this.engine.isSoftDropping = true;
+                    e.preventDefault();
                     break;
-                case 'Space': {
-                    const dropEv = this.engine.hardDrop();
-                    if (dropEv) {
+                case 'Space':
+                    const ev = this.engine.hardDrop();
+                    if (ev) {
                         this.sound.playDrop();
                         this.particles.triggerShake(7);
-                        this.handleTickEvents(dropEv);
+                        this.handleTickEvents(ev);
                     }
+                    e.preventDefault();
                     break;
-                }
                 case 'KeyC':
                 case 'ShiftLeft':
-                    if (this.engine.holdCurrentPiece()) this.sound.playMove();
+                case 'ShiftRight':
+                    if (this.engine.holdCurrentPiece()) this.sound.playLock();
+                    e.preventDefault();
                     break;
                 case 'KeyP':
                 case 'Escape':
                     this.setPaused(!this.engine.paused);
-                    this.showToast(this.engine.paused ? 'PAUSED' : 'RESUMED');
+                    e.preventDefault();
                     break;
                 case 'KeyR':
                     this.restartGame();
+                    e.preventDefault();
                     break;
             }
         });
@@ -937,75 +984,80 @@ class SandtrixApp {
         });
     }
 
-    // ==========================================
-    // Gyro Steering Physics Integration (Analog Continuous Velocity)
-    // ==========================================
-    processGyroSteering(dtMs) {
-        if (!this.gyroEnabled || this.engine.gameOver || this.engine.paused) return;
-
-        const deadzone = 4.5; // degrees threshold
-        const absRoll = Math.abs(this.smoothedRoll);
-
-        if (absRoll > deadzone) {
-            const dir = Math.sign(this.smoothedRoll);
-            const excess = Math.min(32.0, absRoll - deadzone);
-            const normTilt = excess / 32.0;
-
-            // Non-linear analog velocity curve:
-            // 2.5 minos/sec (fine precision adjustments) up to 15.0 minos/sec (rapid tilt slide)
-            const minosPerSec = 2.5 + Math.pow(normTilt, 1.25) * 12.5;
-
-            this.steerAccumulator += dir * minosPerSec * (dtMs / 1000.0);
-
-            while (Math.abs(this.steerAccumulator) >= 1.0) {
-                const moveDir = Math.sign(this.steerAccumulator);
-                if (this.engine.movePiece(moveDir)) {
-                    this.sound.playMove();
-                    this.steerAccumulator -= moveDir;
-                } else {
-                    // Piece reached the boundary wall: zero accumulator to avoid backlog
-                    this.steerAccumulator = 0.0;
-                    break;
-                }
-            }
-        } else {
-            // Instantly damp accumulator inside deadzone to prevent post-tilt drift
-            this.steerAccumulator = 0.0;
-        }
-    }
-
-    // ==========================================
-    // Event Handler for Clears, Calamities & Audio
-    // ==========================================
     handleTickEvents(ev) {
         if (!ev) return;
 
+        // Line clears & special element clears
         if (ev.cleared) {
             this.sound.playClear(ev.combo || 1);
-            this.particles.triggerShake(ev.isWaterWave ? 8 : 4);
+            this.particles.triggerShake(ev.isTidalWave ? 9 : 4);
             const colorHex = PALETTE[ev.color] || '#EB4B4B';
             this.particles.addSparks(ev.coords, colorHex, 2);
 
-            const pointsStr = `+${ev.points}`;
-            this.particles.addFloatingText(200, 320, pointsStr, '#FFD700', 20);
-
-            if (ev.isWaterWave) {
-                this.particles.addFloatingText(200, 280, 'TIDAL WAVE!', '#00D2D7', 24);
+            if (ev.isTidalWave) {
+                this.particles.addFloatingText(200, 270, 'TIDAL WAVE!', '#00D2D7', 22);
                 this.sound.playWaterSplash();
+                this.particles.addSplash(200, 350, '#00D2D7', 40);
+            } else if (ev.isDilutedCleanse) {
+                this.particles.addFloatingText(200, 270, 'DILUTED ACID CLEANSE!', '#18E4CC', 20);
+                this.sound.playWaterSplash();
+                this.particles.addSplash(200, 350, '#18E4CC', 35);
+            } else if (ev.isIceClear) {
+                this.particles.addFloatingText(200, 270, 'FROST SHATTER!', '#99E6FF', 20);
+                this.sound.playIceFreeze();
+                this.particles.addIceShatter(ev.coords);
+            } else if (ev.isFireClear) {
+                this.particles.addFloatingText(200, 270, 'FIRE STORM!', '#FF4500', 20);
+                this.sound.playFireScorch();
+                this.particles.addFireBurst(ev.coords);
+            } else if (ev.isAshClear) {
+                this.particles.addFloatingText(200, 270, 'ASH PURGED!', '#8A9096', 20);
+                this.sound.playMove();
+            } else if (ev.combo > 1) {
+                this.particles.addFloatingText(200, 270, `COMBO x${ev.combo}!`, '#FFD700', 18);
             }
+
+            this.particles.addFloatingText(200, 320, `+${ev.points}`, '#FFD700', 18);
 
             if (ev.roast) {
                 this.showTrollRoast(ev.roast);
             }
         }
 
-        if (ev.landedWater) {
+        // Elemental landing reactions
+        if (ev.isWater) {
             this.sound.playWaterSplash();
-            this.particles.addSplash(200, 680, '#0096C7', 25);
+            this.particles.addSplash(200, 680, '#00D2D7', 20);
+        }
+        if (ev.isIce) {
+            this.sound.playIceFreeze();
+        }
+        if (ev.isFire) {
+            this.sound.playFireScorch();
+        }
+        if (ev.isAcid) {
+            this.sound.playAcidSizzle();
         }
 
-        if (ev.landedAcid) {
+        if (ev.iceMelted) {
+            this.sound.playWaterSplash();
+            this.particles.addFloatingText(200, 250, 'ICE MELTED!', '#00D2D7', 16);
+        }
+        if (ev.sandBurned) {
+            this.sound.playFireScorch();
+            this.particles.addFloatingText(200, 250, 'SAND SCORCHED!', '#FF4500', 16);
+        }
+        if (ev.toxicGasSpawned) {
+            this.sound.playGasHiss();
+            this.particles.addFloatingText(200, 250, 'TOXIC CLOUD!', '#39FF14', 16);
+        }
+        if (ev.fireExtinguished) {
+            this.sound.playWaterSplash();
+            this.particles.addFloatingText(200, 250, 'FIRE EXTINGUISHED!', '#00D2D7', 15);
+        }
+        if (ev.acidDiluted) {
             this.sound.playAcidSizzle();
+            this.particles.addFloatingText(200, 250, 'ACID DILUTED!', '#18E4CC', 15);
         }
 
         if (ev.acidCorroded && ev.acidCorroded.length > 0) {
@@ -1016,9 +1068,11 @@ class SandtrixApp {
         if (ev.bombCrater && ev.bombCrater.length > 0) {
             this.sound.playBoom();
             this.particles.triggerShake(12);
-            this.particles.addSparks(ev.bombCrater, '#FF6B6B', 3);
+            this.particles.addSparks(ev.bombCrater, '#FF4B4B', 3);
             if (this.currentMode === 'troll_classic') {
                 this.showTrollRoast(getRandomTrollRoast('bomb'));
+            } else {
+                this.particles.addFloatingText(200, 260, 'KABOOM! EXCAVATED!', '#FF4B4B', 18);
             }
         }
 
@@ -1037,7 +1091,7 @@ class SandtrixApp {
         if (ev.earthquake) {
             this.sound.playTone(80, 40, 0.4, 'sawtooth');
             this.particles.triggerShake(14);
-            this.showTrollRoast("SEISMIC TREMOR!");
+            if (ev.roast) this.showTrollRoast(ev.roast);
         }
 
         if (ev.confusion) {
@@ -1045,8 +1099,18 @@ class SandtrixApp {
             if (ev.roast) this.showTrollRoast(ev.roast);
         }
 
+        // Victory
+        if (ev.victory || (this.engine && this.engine.missionCompleted)) {
+            if (!this.victoryDisplayed) {
+                this.victoryDisplayed = true;
+                this.sound.playVictory();
+                this.showVictoryOverlay();
+            }
+        }
+
+        // Game Over
         if (ev.gameOver || (this.engine && this.engine.gameOver)) {
-            if (!this.gameOverDisplayed) {
+            if (!this.gameOverDisplayed && !this.victoryDisplayed) {
                 this.gameOverDisplayed = true;
                 this.sound.playGameOver();
                 this.showGameOverOverlay();
@@ -1058,78 +1122,43 @@ class SandtrixApp {
     }
 
     getGameOverMeme() {
-        const score = this.engine.score;
         const lines = this.engine.linesCleared;
         const rots = this.engine.rotationsCount || 0;
         const pieces = this.engine.piecesPlaced || 0;
-        const mode = this.currentMode;
-
-        const memes = [];
 
         if (lines === 0) {
-            memes.push(
-                "Not a single line cleared. The grid is judging you silently.",
-                "Skill issue officially documented and stamped.",
-                "The ceiling rejected your application in record time.",
-                "Did gravity win or were your thumbs frozen?",
-                "Zero lines? Even the ghost piece looked embarrassed."
-            );
+            return "Not a single line cleared. The grid is judging you silently.";
         } else if (rots >= 25) {
-            memes.push(
-                `Rotated ${rots} times like a fidget spinner, still hit the ceiling.`,
-                "All that spinning just to drop it in the wrong slot.",
-                "Certified spin doctor, questionable puzzle solver.",
-                "Spin to win? More like spin to bin."
-            );
+            return `Rotated ${rots} times like a fidget spinner, still hit the ceiling.`;
         } else if (rots === 0 && pieces >= 3) {
-            memes.push(
-                "Zero rotations? Pure vertical purist or forgot the buttons existed?",
-                "Playing without rotations is a dangerous lifestyle.",
-                "Strictly vertical geometry. Respect the audacity."
-            );
-        } else if (score >= 25000) {
-            memes.push(
-                "Wait, you actually cooked?! Someone call the championship.",
-                "Calculated perfection or pure accidental genius?",
-                "Bro entered the zone and cleared the universe."
-            );
-        } else if (score >= 8000) {
-            memes.push(
-                "Respectable run, but that panic drop at the end hurt.",
-                "Solid effort! The blocks demand another sacrifice though.",
-                "You fought bravely, but the stack was hungrier."
-            );
-        } else {
-            memes.push(
-                "Panic drop into the danger zone: A timeless tragedy.",
-                "The Tetris gods are filing a restraining order against your thumbs.",
-                "Your piece saw the open gap, got scared, and stacked anyway.",
-                "Rest in pieces. May the next bag bless your soul.",
-                "Physics said no, and you did not argue back."
-            );
+            return "Zero rotations? Pure vertical purist or forgot the buttons existed?";
+        } else if (this.engine.score >= 25000) {
+            return "Wait, you actually cooked?! Someone call the championship.";
         }
-
-        if (mode === 'troll_classic') {
-            memes.push(
-                "The troll edition lived up to its name and humbled you.",
-                "Calamity struck, brain malfunctioned, game ended.",
-                "You got trolled by geometry itself."
-            );
-        }
-
-        return memes[Math.floor(Math.random() * memes.length)];
+        return "You fought bravely, but the stack was hungrier.";
     }
 
-    formatSurvivalTime(ms) {
-        const totalSec = Math.floor(Math.max(0, ms) / 1000);
-        const mins = Math.floor(totalSec / 60);
-        const secs = totalSec % 60;
-        if (mins >= 60) {
-            const hrs = Math.floor(mins / 60);
-            const remMins = mins % 60;
-            return `${hrs}h ${remMins.toString().padStart(2, '0')}m ${secs.toString().padStart(2, '0')}s`;
-        }
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    showVictoryOverlay() {
+        const overlay = document.getElementById('victoryOverlay');
+        if (!overlay) return;
+
+        const timeStr = this.engine.getFormattedTime();
+        document.getElementById('vicTimeLabel').innerText = timeStr;
+        document.getElementById('vicScoreLabel').innerText = this.engine.score.toLocaleString();
+        document.getElementById('vicLinesLabel').innerText = this.engine.linesCleared.toLocaleString();
+        document.getElementById('vicGoalLabel').innerText = `${this.engine.lineGoal} LINES`;
+        document.getElementById('vicPPSLabel').innerText = this.engine.getPPS();
+        document.getElementById('vicKPSLabel').innerText = this.engine.getKPS();
+        document.getElementById('vicKPPLabel').innerText = this.engine.getKPP();
+        document.getElementById('vicLPPLabel').innerText = this.engine.getLPP();
+
+        overlay.style.display = 'flex';
+    }
+
+    hideVictoryOverlay() {
+        const overlay = document.getElementById('victoryOverlay');
+        if (overlay) overlay.style.display = 'none';
+        this.victoryDisplayed = false;
     }
 
     showGameOverOverlay() {
@@ -1141,7 +1170,7 @@ class SandtrixApp {
             if (hsEl) hsEl.innerText = this.engine.highScore.toLocaleString();
 
             const timeEl = document.getElementById('finalTimeLabel');
-            if (timeEl) timeEl.innerText = this.formatSurvivalTime(this.engine.survivalTimeMs || 0);
+            if (timeEl) timeEl.innerText = this.engine.getFormattedTime();
 
             const linesEl = document.getElementById('finalLinesLabel');
             if (linesEl) linesEl.innerText = this.engine.linesCleared.toLocaleString();
@@ -1152,8 +1181,20 @@ class SandtrixApp {
             const pieceEl = document.getElementById('finalPiecesLabel');
             if (pieceEl) pieceEl.innerText = (this.engine.piecesPlaced || 0).toLocaleString();
 
+            const ppsEl = document.getElementById('finalPPSLabel');
+            if (ppsEl) ppsEl.innerText = this.engine.getPPS();
+
+            const kpsEl = document.getElementById('finalKPSLabel');
+            if (kpsEl) kpsEl.innerText = this.engine.getKPS();
+
+            const modeNames = {
+                'sandtrix': 'Sandtrix',
+                'classic': 'Classic Tetris',
+                'mystery': 'Mystery Sandtrix',
+                'troll_classic': 'Troll Classic'
+            };
             const modeEl = document.getElementById('finalModeLabel');
-            if (modeEl) modeEl.innerText = (this.currentMode === 'troll_classic') ? 'Troll Classic' : 'Sandtrix';
+            if (modeEl) modeEl.innerText = modeNames[this.currentMode] || 'Sandtrix';
 
             const memeEl = document.getElementById('modalMemeLine');
             if (memeEl) memeEl.innerText = `"${this.getGameOverMeme()}"`;
@@ -1168,24 +1209,24 @@ class SandtrixApp {
         this.gameOverDisplayed = false;
     }
 
-    // ==========================================
-    // 60 FPS Game Loop & Direct Canvas Blitting
-    // ==========================================
     gameLoop(now) {
         const dtMs = Math.min(60, now - this.lastTime);
         this.lastTime = now;
 
         if (this.currentPage === 'game' && this.gameStarted) {
-            if (this.engine.gameOver) {
+            if (this.engine.missionCompleted) {
+                this.handleTickEvents({ victory: true });
+            } else if (this.engine.gameOver) {
                 this.handleTickEvents({ gameOver: true });
             } else if (!this.engine.paused) {
-                // Process Gyroscope Steering
                 if (this.gyroEnabled) {
                     this.processGyroSteering(dtMs);
                 }
 
-                // Simulation Tick
                 const tickEvents = this.engine.tick(dtMs);
+                if (this.engine.missionCompleted) {
+                    tickEvents.victory = true;
+                }
                 if (this.engine.gameOver) {
                     tickEvents.gameOver = true;
                 }
@@ -1193,7 +1234,6 @@ class SandtrixApp {
             }
         }
 
-        // Render Frame & Sync HUD only when on game screen
         if (this.currentPage === 'game') {
             this.render();
             this.syncHUD();
@@ -1208,14 +1248,13 @@ class SandtrixApp {
         this.ctx.save();
         this.ctx.translate(shakeX, shakeY);
 
-        // 1. Direct Framebuffer Blitting of Sand/Block Grid
+        // 1. Framebuffer Blitting
         const grid = this.engine.grid;
         for (let i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i++) {
             const mat = grid[i];
             this.pixelBuf[i] = this.colorABGR[mat] || this.colorABGR[0];
         }
 
-        // Create temporary canvas to scale 80x140 grid up to 400x700 with pixel perfection
         if (!this.offscreenCanvas) {
             this.offscreenCanvas = document.createElement('canvas');
             this.offscreenCanvas.width = BOARD_WIDTH;
@@ -1224,42 +1263,37 @@ class SandtrixApp {
         }
 
         this.offCtx.putImageData(this.imageData, 0, 0);
-
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.drawImage(this.offscreenCanvas, 0, 0, 400, 700);
 
-        // 1.5. Render Classic Mino Grid Lines (Troll Classic Mode)
-        if (this.currentMode === 'troll_classic') {
+        // 2. Classic Mino Grid Lines (Classic & Troll Modes)
+        if (this.engine.isClassicGrid()) {
             this.ctx.save();
             this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
             this.ctx.lineWidth = 1;
             this.ctx.beginPath();
 
-            // Vertical column lines (10 columns, 40px width)
             for (let c = 1; c < 10; c++) {
                 const gx = c * 40;
                 this.ctx.moveTo(gx, 20);
                 this.ctx.lineTo(gx, 700);
             }
-
-            // Horizontal row lines (17 rows, 40px height, from y = 20px to y = 700px)
             for (let r = 0; r <= 17; r++) {
                 const gy = 20 + r * 40;
                 this.ctx.moveTo(0, gy);
                 this.ctx.lineTo(400, gy);
             }
-
             this.ctx.stroke();
             this.ctx.restore();
         }
 
-        // 2. Playfield Boundary Walls (crisp high-contrast frame)
+        // Boundary Frame
         this.ctx.strokeStyle = '#2A364F';
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(1, 1, 398, 698);
 
-        // 3. Render Danger Line
-        const dangerY = ((this.currentMode === 'troll_classic') ? (4 + MINO_SIZE) : DANGER_ROW) * 5;
+        // Danger Line
+        const dangerY = (this.engine.isClassicGrid() ? (4 + MINO_SIZE) : DANGER_ROW) * 5;
         this.ctx.strokeStyle = 'rgba(235, 75, 75, 0.45)';
         this.ctx.lineWidth = 1;
         this.ctx.setLineDash([4, 4]);
@@ -1269,9 +1303,10 @@ class SandtrixApp {
         this.ctx.stroke();
         this.ctx.setLineDash([]);
 
-        // 4. Render Ghost Piece
-        if (this.engine.activePiece && !this.engine.gameOver) {
-            const ghostY = this.engine.activePiece.getGhostY(this.engine.grid, (this.currentMode === 'troll_classic') ? MINO_SIZE : 1);
+        // Ghost Piece
+        if (this.engine.activePiece && !this.engine.gameOver && !this.engine.missionCompleted) {
+            const step = this.engine.isClassicGrid() ? MINO_SIZE : 1;
+            const ghostY = this.engine.activePiece.getGhostY(this.engine.grid, step);
             const mask = this.engine.activePiece.grainMask;
             const mw = this.engine.activePiece.maskWidth;
             const mh = this.engine.activePiece.maskHeight;
@@ -1285,14 +1320,13 @@ class SandtrixApp {
                     if (mask[gy * mw + gx]) {
                         const worldX = px + gx;
                         if (worldX >= 0 && worldX < BOARD_WIDTH) {
-                            const drawX = worldX * 5;
-                            this.ctx.fillRect(drawX, drawY, 5, 5);
+                            this.ctx.fillRect(worldX * 5, drawY, 5, 5);
                         }
                     }
                 }
             }
 
-            // 5. Render Active Piece
+            // Active Piece
             const activeY = this.engine.activePiece.y;
             const colorHex = PALETTE[this.engine.activePiece.colorIdx] || '#EB4B4B';
             this.ctx.fillStyle = colorHex;
@@ -1303,81 +1337,46 @@ class SandtrixApp {
                     if (mask[gy * mw + gx]) {
                         const worldX = px + gx;
                         if (worldX >= 0 && worldX < BOARD_WIDTH) {
-                            const drawX = worldX * 5;
-                            this.ctx.fillRect(drawX, drawY, 5, 5);
+                            this.ctx.fillRect(worldX * 5, drawY, 5, 5);
                         }
                     }
                 }
             }
         }
 
-        // 5. Render Particle System
+        // Draw particle effects & floating texts
         this.particles.draw(this.ctx);
-
         this.ctx.restore();
-
-        // 6. Render Paused Screen Overlay on Playfield Canvas
-        if (this.engine.paused && this.currentPage === 'game' && this.gameStarted && !this.engine.gameOver) {
-            this.ctx.save();
-            this.ctx.fillStyle = 'rgba(11, 14, 20, 0.78)';
-            this.ctx.fillRect(0, 0, 400, 700);
-
-            this.ctx.font = '700 32px Comfortaa, Nunito, sans-serif';
-            this.ctx.fillStyle = '#48CAE4';
-            this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'middle';
-            this.ctx.fillText('PAUSED', 200, 320);
-
-            this.ctx.font = '700 13px Nunito, sans-serif';
-            this.ctx.fillStyle = '#F3F6FA';
-            this.ctx.fillText('PRESS BACK TO EXIT', 200, 360);
-
-            this.ctx.font = '600 12px Nunito, sans-serif';
-            this.ctx.fillStyle = '#9AA7BD';
-            this.ctx.fillText('TAP SCREEN TO RESUME', 200, 385);
-            this.ctx.restore();
-        }
     }
 
     syncHUD() {
-        const scoreEl = document.getElementById('lblScore');
-        if (scoreEl) {
-            const val = this.engine.score;
-            scoreEl.innerText = val.toLocaleString();
-            if (val >= 10000000) {
-                scoreEl.style.fontSize = '0.70rem';
-            } else if (val >= 1000000) {
-                scoreEl.style.fontSize = '0.80rem';
+        const lblScore = document.getElementById('lblScore');
+        const lblLines = document.getElementById('lblLines');
+        const lblLevel = document.getElementById('lblLevel');
+        const lblHighScore = document.getElementById('lblHighScore');
+        const badgeCombo = document.getElementById('badgeCombo');
+
+        if (lblScore) lblScore.innerText = this.engine.score.toLocaleString();
+        if (lblLines) {
+            if (this.engine.lineGoal > 0) {
+                lblLines.innerText = `${this.engine.linesCleared}/${this.engine.lineGoal}`;
             } else {
-                scoreEl.style.fontSize = '';
+                lblLines.innerText = this.engine.linesCleared.toLocaleString();
             }
         }
+        if (lblLevel) lblLevel.innerText = this.engine.level.toString();
+        if (lblHighScore) lblHighScore.innerText = this.engine.highScore.toLocaleString();
 
-        const hsEl = document.getElementById('lblHighScore');
-        if (hsEl) {
-            hsEl.innerText = this.engine.highScore.toLocaleString();
-        }
-
-        const linesEl = document.getElementById('lblLines');
-        if (linesEl) linesEl.innerText = this.engine.linesCleared.toString();
-
-        const levelEl = document.getElementById('lblLevel');
-        if (levelEl) levelEl.innerText = this.engine.level.toString();
-
-        const comboBadge = document.getElementById('badgeCombo');
-        if (comboBadge) {
+        if (badgeCombo) {
             if (this.engine.combo > 1) {
-                comboBadge.innerText = `${this.engine.combo}x COMBO`;
-                comboBadge.style.display = 'inline-block';
+                badgeCombo.innerText = `${this.engine.combo}x COMBO`;
+                badgeCombo.style.opacity = '1';
             } else {
-                comboBadge.style.display = 'none';
+                badgeCombo.style.opacity = '0';
             }
         }
 
-        // Render Hold Piece Preview
         this.renderPiecePreview('holdCanvas', this.engine.holdPiece);
-
-        // Render Next Pieces Queue (Incoming elements queue)
         const nextIds = ['nextCanvas', 'nextCanvas1', 'nextCanvas2'];
         for (let i = 0; i < nextIds.length; i++) {
             this.renderPiecePreview(nextIds[i], this.engine.nextQueue[i]);
@@ -1409,7 +1408,6 @@ class SandtrixApp {
     }
 }
 
-// Instantiate on DOM load
 window.addEventListener('DOMContentLoaded', () => {
     window.app = new SandtrixApp();
 });

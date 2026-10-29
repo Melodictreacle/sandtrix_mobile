@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0B0E14">
-    <title>SANDTRIX MOBILE - Gyro & Troll Edition</title>
+    <meta name="theme-color" content="#12151C">
+    <title>SANDTRIX MOBILE - Gyro, Fluids &amp; Chaos</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=22">
+    <link rel="stylesheet" href="style.css?v=35">
 </head>
 <body>
 
@@ -24,38 +24,88 @@
         <div class="menu-card-full">
             <div class="menu-brand">
                 <h1 class="menu-title">SANDTRIX</h1>
+                <div class="menu-subtitle">PHYSICS &bull; FLUIDS &bull; CHAOS</div>
             </div>
 
-            <!-- Mode Selection Section -->
+            <!-- Mode Selection Section (All 4 Game Modes) -->
             <div class="menu-section">
                 <div class="menu-section-title">SELECT GAMEMODE</div>
                 <div class="mode-select-grid">
+                    <!-- Mode 1: Sandtrix -->
                     <div class="mode-card sandtrix active" id="menuModeSandtrix" data-mode="sandtrix">
                         <div class="mode-card-header">
                             <div class="mode-card-title-group">
                                 <span class="mode-badge-sand">SAND</span>
                                 <span class="mode-name">SANDTRIX</span>
                             </div>
-                            <span class="mode-tag tag-sand">WATER &amp; ACID</span>
+                            <span class="mode-tag tag-sand">FLUIDS &amp; ACID</span>
                         </div>
                     </div>
 
+                    <!-- Mode 2: Classic Tetris (Pure Rigid 10x17) -->
+                    <div class="mode-card classic" id="menuModeClassic" data-mode="classic">
+                        <div class="mode-card-header">
+                            <div class="mode-card-title-group">
+                                <span class="mode-badge-classic">CLASSIC</span>
+                                <span class="mode-name">CLASSIC TETRIS</span>
+                            </div>
+                            <span class="mode-tag tag-classic">SOLID 10&times;17 GRID</span>
+                        </div>
+                    </div>
+
+                    <!-- Mode 3: Mystery Sandtrix (Sand Physics + Chaos & Bombs) -->
+                    <div class="mode-card mystery" id="menuModeMystery" data-mode="mystery">
+                        <div class="mode-card-header">
+                            <div class="mode-card-title-group">
+                                <span class="mode-badge-mystery">MYSTERY</span>
+                                <span class="mode-name">MYSTERY SANDTRIX</span>
+                            </div>
+                            <span class="mode-tag tag-mystery">CHAOS &amp; BOMBS</span>
+                        </div>
+                    </div>
+
+                    <!-- Mode 4: Troll Classic Tetris (Rigid + Calamities & Roaster) -->
                     <div class="mode-card troll" id="menuModeTroll" data-mode="troll_classic">
                         <div class="mode-card-header">
                             <div class="mode-card-title-group">
                                 <span class="mode-badge-troll">TROLL</span>
                                 <span class="mode-name">TROLL CLASSIC</span>
                             </div>
-                            <span class="mode-tag tag-troll">CHAOS EDITION</span>
+                            <span class="mode-tag tag-troll">CHAOS &amp; ROASTS</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Gyroscope Control Section -->
+            <!-- Mission Line Goal Selector (Sprint / Marathon) -->
             <div class="menu-section">
-                <div class="menu-section-title">CONTROL SCHEME</div>
+                <div class="menu-section-title">MISSION LINE GOAL</div>
+                <div class="goal-pill-group">
+                    <button class="goal-pill active" data-goal="0">ENDLESS</button>
+                    <button class="goal-pill" data-goal="20">20L</button>
+                    <button class="goal-pill" data-goal="40">40L</button>
+                    <button class="goal-pill" data-goal="100">100L</button>
+                </div>
+            </div>
+
+            <!-- Elemental & Gyroscope Controls Section -->
+            <div class="menu-section">
+                <div class="menu-section-title">SETTINGS &amp; CONTROLS</div>
+
                 <div class="gyro-toggle-row">
+                    <div class="gyro-toggle-info">
+                        <div class="gyro-toggle-label">
+                            <span>ELEMENTAL PIECES</span>
+                        </div>
+                        <div class="gyro-toggle-subtext">Water, Ice, Fire, Acid &amp; Bombs</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="chkMenuElements" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="gyro-toggle-row" style="margin-top: 8px;">
                     <div class="gyro-toggle-info">
                         <div class="gyro-toggle-label">
                             <span>GYROSCOPE MOTION</span>
@@ -82,7 +132,6 @@
 
     <!-- ========================================== -->
     <!-- PAGE 2: CLEAN GAME SCREEN                 -->
-    <!-- (Starts directly from game grid)           -->
     <!-- ========================================== -->
     <div id="pageGame" class="page-view">
         <!-- Compact Top Navigation Bar -->
@@ -97,7 +146,7 @@
 
         <!-- Main Game Area (Game Grid + Side HUDs) -->
         <div class="game-layout">
-            <!-- Left HUD (Only HOLD and expanded SCORE, NO HIGH SCORE BOX) -->
+            <!-- Left HUD -->
             <div class="hud-side hud-left">
                 <div class="hud-card">
                     <div class="hud-label">HOLD</div>
@@ -112,6 +161,7 @@
             <!-- Central Playfield Canvas Grid -->
             <div class="canvas-wrapper">
                 <canvas id="gameCanvas"></canvas>
+                <div id="trollRoastBanner" class="troll-roast-banner"></div>
             </div>
 
             <!-- Right HUD -->
@@ -154,7 +204,9 @@
     </div>
 </div>
 
-<!-- How To Play Modal -->
+<!-- ========================================== -->
+<!-- MODAL: HOW TO PLAY                         -->
+<!-- ========================================== -->
 <div id="howToPlayModal" class="overlay">
     <div class="modal-card help-modal-card">
         <div class="modal-header">
@@ -162,102 +214,107 @@
             <button id="btnCloseHowToPlayTop" class="modal-close-x">&times;</button>
         </div>
         <div class="modal-scroll-body">
+            <!-- 4 Gamemodes -->
             <div class="help-section">
-                <div class="help-section-title tag-sand">SANDTRIX MODE</div>
-                <p class="help-p">Blocks crumble into free-falling sand grains upon landing. Settled sand dunes slide dynamically with your phone's tilt gravity!</p>
-                <p class="help-p"><strong>OBJECTIVE:</strong> Form an uninterrupted line of the <strong>SAME COLOR</strong> from the left edge to the right edge to trigger a massive sand collapse clear.</p>
+                <div class="help-section-title tag-sand">1. SANDTRIX MODE</div>
+                <p class="help-p">Tetrominoes crumble into individual physically simulated sand grains upon touching the ground. Tilt your phone to steer falling pieces and send settled sand sliding across the grid!</p>
+                <p class="help-p"><strong>OBJECTIVE:</strong> Form an unbroken 8-connected line of the <strong>SAME COLOR</strong> from the left wall ($x=0$) to the right wall ($x=79$) to clear.</p>
             </div>
 
             <div class="help-section">
-                <div class="help-section-title">BLOCK COLORS &amp; ELEMENTS</div>
-                <div class="element-legend">
-                    <div class="element-category-heading">SAND COLORS</div>
-                    <div class="element-group-grid">
-                        <div class="element-item">
-                            <span class="color-swatch-box" style="background-color: #F26D78; box-shadow: 0 0 8px rgba(242, 109, 120, 0.45);"></span>
-                            <div class="element-info">
-                                <span class="element-name" style="color: #F26D78;">RED SAND</span>
-                                <span class="element-desc">Forms coral dunes. Connect wall-to-wall to clear.</span>
-                            </div>
-                        </div>
-                        <div class="element-item">
-                            <span class="color-swatch-box" style="background-color: #F6C453; box-shadow: 0 0 8px rgba(246, 196, 83, 0.45);"></span>
-                            <div class="element-info">
-                                <span class="element-name" style="color: #F6C453;">YELLOW SAND</span>
-                                <span class="element-desc">Forms warm amber dunes. Connect wall-to-wall to clear.</span>
-                            </div>
-                        </div>
-                        <div class="element-item">
-                            <span class="color-swatch-box" style="background-color: #4ECCA3; box-shadow: 0 0 8px rgba(78, 204, 163, 0.45);"></span>
-                            <div class="element-info">
-                                <span class="element-name" style="color: #4ECCA3;">GREEN SAND</span>
-                                <span class="element-desc">Forms pastel mint dunes. Connect wall-to-wall to clear.</span>
-                            </div>
-                        </div>
-                        <div class="element-item">
-                            <span class="color-swatch-box" style="background-color: #5B92E5; box-shadow: 0 0 8px rgba(91, 146, 229, 0.45);"></span>
-                            <div class="element-info">
-                                <span class="element-name" style="color: #5B92E5;">BLUE SAND</span>
-                                <span class="element-desc">Forms periwinkle dunes. Connect wall-to-wall to clear.</span>
-                            </div>
-                        </div>
-                        <div class="element-item">
-                            <span class="color-swatch-box" style="background-color: #9D8DF1; box-shadow: 0 0 8px rgba(157, 141, 241, 0.45);"></span>
-                            <div class="element-info">
-                                <span class="element-name" style="color: #9D8DF1;">PURPLE SAND</span>
-                                <span class="element-desc">Forms lavender dunes. Connect wall-to-wall to clear.</span>
-                            </div>
-                        </div>
-                        <div class="element-item">
-                            <span class="color-swatch-box" style="background-color: #FF9F43; box-shadow: 0 0 8px rgba(255, 159, 67, 0.45);"></span>
-                            <div class="element-info">
-                                <span class="element-name" style="color: #FF9F43;">ORANGE SAND</span>
-                                <span class="element-desc">Forms tangerine dunes. Connect wall-to-wall to clear.</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="help-section-title tag-classic">2. CLASSIC TETRIS MODE</div>
+                <p class="help-p">Authentic 10-column &times; 17-row rigid block puzzle. Blocks stay completely solid—no sand physics! Clear complete horizontal rows to score Singles, Doubles, Triples, and 4-line TETRIS clears.</p>
+            </div>
 
-                    <div class="element-category-heading" style="margin-top: 6px;">SPECIAL FLUIDS &amp; HAZARDS</div>
+            <div class="help-section">
+                <div class="help-section-title tag-mystery">3. MYSTERY SANDTRIX MODE</div>
+                <p class="help-p">Sand physics combined with mid-air piece shape-shifting, TNT bomb explosive craters, sudden earthquakes, wind gusts, and inverted control chaos!</p>
+            </div>
+
+            <div class="help-section">
+                <div class="help-section-title tag-troll">4. TROLL CLASSIC TETRIS</div>
+                <p class="help-p">Traditional solid mino grid hijacked by mid-air shape-shifting, TNT bombs, and a sarcastic on-screen roaster that ruthlessly critiques your gameplay!</p>
+            </div>
+
+            <!-- Elemental Suite -->
+            <div class="help-section">
+                <div class="help-section-title">ELEMENTAL CHEMICAL REACTIONS</div>
+                <div class="element-legend">
+                    <div class="element-category-heading">SPECIAL FLUIDS &amp; THERMAL ELEMENTS</div>
                     <div class="element-group-grid">
                         <div class="element-item">
-                            <span class="color-swatch-box" style="background-color: #0096C7; box-shadow: 0 0 8px rgba(0, 150, 199, 0.5);"></span>
+                            <span class="color-swatch-box" style="background-color: #00D2D7; box-shadow: 0 0 8px rgba(0, 210, 215, 0.5);"></span>
                             <div class="element-info">
-                                <span class="element-name" style="color: #0096C7;">WATER</span>
-                                <span class="element-desc">Crystal ocean blue fluid that flows into crevices and floats blocks. Connect wall-to-wall for a water wave clear!</span>
+                                <span class="element-name" style="color: #00D2D7;">WATER</span>
+                                <span class="element-desc">Flows and levels out flat. Sand sinks through water. Connecting both edges triggers a <strong>TIDAL WAVE</strong>, clearing ALL water from the board!</span>
                             </div>
                         </div>
+
                         <div class="element-item">
-                            <span class="color-swatch-box" style="background-color: #C8FF00; box-shadow: 0 0 8px rgba(200, 255, 0, 0.5);"></span>
+                            <span class="color-swatch-box" style="background-color: #99E6FF; box-shadow: 0 0 8px rgba(153, 230, 255, 0.5);"></span>
                             <div class="element-info">
-                                <span class="element-name" style="color: #C8FF00;">ACID</span>
-                                <span class="element-desc">Radioactive toxic lime substance that steadily eats and dissolves touching sand.</span>
+                                <span class="element-name" style="color: #99E6FF;">ICE</span>
+                                <span class="element-desc">Solid frozen water. Whenever an ice piece moves downward or lands, all touching water instantly flash-freezes into ice! Connects for a <strong>FROST SHATTER</strong> clear.</span>
                             </div>
                         </div>
+
                         <div class="element-item">
-                            <span class="color-swatch-box" style="background-color: #FF6B6B; box-shadow: 0 0 8px rgba(255, 107, 107, 0.5);"></span>
+                            <span class="color-swatch-box" style="background-color: #FF4500; box-shadow: 0 0 8px rgba(255, 69, 0, 0.5);"></span>
                             <div class="element-info">
-                                <span class="element-name" style="color: #FF6B6B;">BOMB</span>
-                                <span class="element-desc">Demolition explosive charge that blasts open a crater on impact.</span>
+                                <span class="element-name" style="color: #FF4500;">FIRE</span>
+                                <span class="element-desc">Roaring thermal block:
+                                    <br>&bull; Fire on Ice: 100% melts all ice on the board into liquid water!
+                                    <br>&bull; Fire on Water: Fire is completely extinguished.
+                                    <br>&bull; Fire on Acid: Spawns a rising radioactive <strong>TOXIC CLOUD</strong>!
+                                    <br>&bull; Fire on Sand: Scorches ~1/3 of sand into charcoal <strong>ASH</strong> powder.
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #CDEB2D; box-shadow: 0 0 8px rgba(205, 235, 45, 0.5);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #CDEB2D;">ACID</span>
+                                <span class="element-desc">Toxic lime acid that dissolves sand on contact. When mixed with ice or water, it converts into flowing <strong>DILUTED ACID</strong>.</span>
+                            </div>
+                        </div>
+
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #18E4CC; box-shadow: 0 0 8px rgba(24, 228, 204, 0.5);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #18E4CC;">DILUTED ACID</span>
+                                <span class="element-desc">Shimmering aquamarine fluid that pools over sand dunes while gently excavating them. Connects wall-to-wall for a <strong>DILUTED ACID CLEANSE</strong>!</span>
+                            </div>
+                        </div>
+
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #8A9096; box-shadow: 0 0 8px rgba(138, 144, 150, 0.5);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #8A9096;">ASH</span>
+                                <span class="element-desc">Charcoal residue produced by burned sand. Cascades like sand and connects edge-to-edge for <strong>ASH PURGED</strong> clears.</span>
+                            </div>
+                        </div>
+
+                        <div class="element-item">
+                            <span class="color-swatch-box" style="background-color: #FF4B4B; box-shadow: 0 0 8px rgba(255, 75, 75, 0.5);"></span>
+                            <div class="element-info">
+                                <span class="element-name" style="color: #FF4B4B;">TNT BOMB</span>
+                                <span class="element-desc">Flashing explosive charge that detonates an impact crater on landing, clearing trapped dunes or minos.</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Controls -->
             <div class="help-section">
-                <div class="help-section-title tag-troll">TROLL CLASSIC MODE</div>
-                <p class="help-p">Classic 10×17 rigid block puzzle. Clear complete horizontal rows to earn multiplier points.</p>
-                <p class="help-p"><strong>TROLL CALAMITIES:</strong> Watch out for spontaneous mid-air shape mutations, wind gusts, seismic tremors, reversed controls, and roasting commentary!</p>
-            </div>
-
-            <div class="help-section">
-                <div class="help-section-title">CONTROLS GUIDE</div>
+                <div class="help-section-title">MOBILE CONTROLS</div>
                 <div class="help-controls-list">
-                    <div class="ctrl-guide-item"><strong>GYROSCOPE:</strong> Tilt phone left or right to steer falling pieces smoothly and slosh sand physics.</div>
+                    <div class="ctrl-guide-item"><strong>GYROSCOPE:</strong> Tilt phone left/right to steer and slosh sand/water.</div>
                     <div class="ctrl-guide-item"><strong>TAP PLAYFIELD:</strong> Rotate piece clockwise.</div>
                     <div class="ctrl-guide-item"><strong>SWIPE DOWN:</strong> Soft drop.</div>
-                    <div class="ctrl-guide-item"><strong>SWIPE HORIZONTAL:</strong> Nudge piece left or right.</div>
-                    <div class="ctrl-guide-item"><strong>BUTTONS:</strong> LEFT, RIGHT, DROP, SLAM (instant drop), ROT L, ROT R, HOLD, PAUSE.</div>
+                    <div class="ctrl-guide-item"><strong>SWIPE LEFT/RIGHT:</strong> Nudge piece sideways.</div>
+                    <div class="ctrl-guide-item"><strong>BUTTONS:</strong> HOLD, ROT L, ROT R, DROP, SLAM (instant hard drop), PAUSE.</div>
                 </div>
             </div>
         </div>
@@ -267,7 +324,9 @@
     </div>
 </div>
 
-<!-- Settings Modal -->
+<!-- ========================================== -->
+<!-- MODAL: SETTINGS                            -->
+<!-- ========================================== -->
 <div id="settingsModal" class="overlay">
     <div class="modal-card settings-modal-card">
         <div class="modal-header">
@@ -299,7 +358,7 @@
                 <div class="settings-hint">Higher starting levels increase drop speed and award higher score multipliers.</div>
             </div>
 
-            <!-- High Score Stats in Settings -->
+            <!-- High Score Records for All 4 Modes -->
             <div class="settings-group">
                 <div class="settings-group-header">
                     <span class="settings-label">HIGH SCORE RECORDS</span>
@@ -307,11 +366,21 @@
                 <div class="settings-stats-row">
                     <div class="settings-stat-pill">
                         <span class="settings-stat-name">SANDTRIX</span>
-                        <span id="settingsHighSandtrix" class="settings-stat-val">0</span>
+                        <span id="settingsHigh_sandtrix" class="settings-stat-val">0</span>
                     </div>
                     <div class="settings-stat-pill">
-                        <span class="settings-stat-name">TROLL CLASSIC</span>
-                        <span id="settingsHighTroll" class="settings-stat-val" style="color: var(--accent-ruby);">0</span>
+                        <span class="settings-stat-name">CLASSIC</span>
+                        <span id="settingsHigh_classic" class="settings-stat-val" style="color: #28B964;">0</span>
+                    </div>
+                </div>
+                <div class="settings-stats-row" style="margin-top: 6px;">
+                    <div class="settings-stat-pill">
+                        <span class="settings-stat-name">MYSTERY</span>
+                        <span id="settingsHigh_mystery" class="settings-stat-val" style="color: #F5B923;">0</span>
+                    </div>
+                    <div class="settings-stat-pill">
+                        <span class="settings-stat-name">TROLL</span>
+                        <span id="settingsHigh_troll_classic" class="settings-stat-val" style="color: var(--accent-ruby);">0</span>
                     </div>
                 </div>
                 <button id="btnClearHighScores" class="touch-btn danger" style="width: 100%; padding: 10px; font-size: 0.76rem; margin-top: 8px;">CLEAR HIGH SCORES</button>
@@ -323,7 +392,53 @@
     </div>
 </div>
 
-<!-- Game Over Modal -->
+<!-- ========================================== -->
+<!-- MODAL: VICTORY OVERLAY (GOAL COMPLETED)    -->
+<!-- ========================================== -->
+<div id="victoryOverlay" class="overlay">
+    <div class="modal-card victory-modal-card">
+        <div class="modal-title" style="color: var(--accent-green);">MISSION COMPLETED!</div>
+        <div class="victory-banner" id="vicGoalLabel">40 LINES SPRINT</div>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-item-label">CLEAR TIME</div>
+                <div id="vicTimeLabel" class="stat-item-val" style="color: #48CAE4;">00:00.00</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">FINAL SCORE</div>
+                <div id="vicScoreLabel" class="stat-item-val">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">PIECES / SEC (PPS)</div>
+                <div id="vicPPSLabel" class="stat-item-val" style="color: var(--accent-gold);">0.00</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">KEYS / SEC (KPS)</div>
+                <div id="vicKPSLabel" class="stat-item-val" style="color: var(--accent-teal);">0.00</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">KEYS / PIECE (KPP)</div>
+                <div id="vicKPPLabel" class="stat-item-val">0.00</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">LINES / PIECE (LPP)</div>
+                <div id="vicLPPLabel" class="stat-item-val" style="color: var(--accent-green);">0.00</div>
+            </div>
+            <div class="stat-item" style="grid-column: span 2;">
+                <div class="stat-item-label">LINES CLEARED</div>
+                <div id="vicLinesLabel" class="stat-item-val" style="color: #4ECCA3;">40</div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 8px; width: 100%;">
+            <button id="btnVictoryMenu" class="touch-btn" style="flex: 1; padding: 14px; background-color: #242C3D;">MENU</button>
+            <button id="btnVictoryRestart" class="touch-btn primary" style="flex: 1.5; padding: 14px;">PLAY AGAIN</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: GAME OVER                           -->
+<!-- ========================================== -->
 <div id="gameOverOverlay" class="overlay">
     <div class="modal-card game-over-modal-card">
         <div class="modal-title">GAME OVER</div>
@@ -339,19 +454,27 @@
             </div>
             <div class="stat-item">
                 <div class="stat-item-label">TIME SURVIVED</div>
-                <div id="finalTimeLabel" class="stat-item-val" style="color: #48CAE4;">00:00</div>
+                <div id="finalTimeLabel" class="stat-item-val" style="color: #48CAE4;">00:00.00</div>
             </div>
             <div class="stat-item">
                 <div class="stat-item-label">LINES CLEARED</div>
                 <div id="finalLinesLabel" class="stat-item-val" style="color: var(--accent-green);">0</div>
             </div>
             <div class="stat-item">
-                <div class="stat-item-label">PIECES ROTATED</div>
-                <div id="finalRotationsLabel" class="stat-item-val" style="color: var(--accent-teal);">0</div>
+                <div class="stat-item-label">PPS (PIECES/SEC)</div>
+                <div id="finalPPSLabel" class="stat-item-val" style="color: var(--accent-teal);">0.00</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">KPS (KEYS/SEC)</div>
+                <div id="finalKPSLabel" class="stat-item-val" style="color: var(--accent-gold);">0.00</div>
             </div>
             <div class="stat-item">
                 <div class="stat-item-label">PIECES PLACED</div>
                 <div id="finalPiecesLabel" class="stat-item-val">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-item-label">ROTATIONS</div>
+                <div id="finalRotationsLabel" class="stat-item-val" style="color: #9D8DF1;">0</div>
             </div>
             <div class="stat-item" style="grid-column: span 2;">
                 <div class="stat-item-label">MODE PLAYED</div>
@@ -369,9 +492,9 @@
 <div id="toast" class="toast"></div>
 
 <!-- Scripts -->
-<script src="audio.js?v=30"></script>
-<script src="sand_engine.js?v=30"></script>
-<script src="app.js?v=30"></script>
+<script src="audio.js?v=35"></script>
+<script src="sand_engine.js?v=35"></script>
+<script src="app.js?v=35"></script>
 <script>
   if ('serviceWorker' in navigator) {
     let refreshing = false;

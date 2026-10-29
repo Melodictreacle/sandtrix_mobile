@@ -519,6 +519,18 @@ canvas#gameCanvas {
     box-shadow: 0 0 16px rgba(72, 202, 228, 0.22);
 }
 
+.mode-card.active.classic {
+    background-color: #172922;
+    border-color: #28B964;
+    box-shadow: 0 0 16px rgba(40, 185, 100, 0.22);
+}
+
+.mode-card.active.mystery {
+    background-color: #262417;
+    border-color: #F5B923;
+    box-shadow: 0 0 16px rgba(245, 185, 35, 0.22);
+}
+
 .mode-card.active.troll {
     background-color: #261B24;
     border-color: var(--accent-ruby);
@@ -545,6 +557,28 @@ canvas#gameCanvas {
     background-color: rgba(72, 202, 228, 0.18);
     color: var(--accent-teal);
     border: 1px solid rgba(72, 202, 228, 0.35);
+    letter-spacing: 0.5px;
+}
+
+.mode-badge-classic {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background-color: rgba(40, 185, 100, 0.18);
+    color: #28B964;
+    border: 1px solid rgba(40, 185, 100, 0.35);
+    letter-spacing: 0.5px;
+}
+
+.mode-badge-mystery {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background-color: rgba(245, 185, 35, 0.18);
+    color: #F5B923;
+    border: 1px solid rgba(245, 185, 35, 0.35);
     letter-spacing: 0.5px;
 }
 
@@ -579,6 +613,18 @@ canvas#gameCanvas {
     border: 1px solid rgba(72, 202, 228, 0.28);
 }
 
+.tag-classic {
+    background-color: rgba(40, 185, 100, 0.14);
+    color: #28B964;
+    border: 1px solid rgba(40, 185, 100, 0.28);
+}
+
+.tag-mystery {
+    background-color: rgba(245, 185, 35, 0.14);
+    color: #F5B923;
+    border: 1px solid rgba(245, 185, 35, 0.28);
+}
+
 .tag-troll {
     background-color: rgba(242, 109, 120, 0.14);
     color: var(--accent-ruby);
@@ -589,6 +635,47 @@ canvas#gameCanvas {
     font-size: 0.72rem;
     color: var(--text-secondary);
     line-height: 1.35;
+}
+
+.menu-subtitle {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--accent-teal);
+    letter-spacing: 1.5px;
+    margin-top: 3px;
+}
+
+/* Mission Goal Pills */
+.goal-pill-group {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    width: 100%;
+}
+
+.goal-pill {
+    background-color: #171E2B;
+    border: 1px solid #28344B;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 9px 0;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.goal-pill:hover {
+    background-color: #232C3E;
+    color: var(--text-primary);
+}
+
+.goal-pill.active {
+    background-color: #1A3E48;
+    border-color: var(--accent-teal);
+    color: #FFFFFF;
+    box-shadow: 0 0 12px rgba(72, 202, 228, 0.25);
 }
 
 /* Gyroscope Control Row & Switch */
@@ -1060,6 +1147,28 @@ input:checked + .slider:before {
     font-size: 0.95rem;
     font-weight: 800;
     color: var(--accent-gold);
+}
+
+.victory-modal-card {
+    max-width: 360px;
+    width: 90%;
+    padding: 22px 18px;
+    border-radius: 22px;
+    border: 2px solid var(--accent-green);
+    box-shadow: 0 0 28px rgba(78, 204, 163, 0.28);
+}
+
+.victory-banner {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--accent-green);
+    background-color: rgba(78, 204, 163, 0.12);
+    border: 1px solid rgba(78, 204, 163, 0.3);
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin: 4px 0 12px 0;
+    letter-spacing: 1px;
+    text-align: center;
 }
 
 .game-over-modal-card {

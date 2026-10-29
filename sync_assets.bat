@@ -12,4 +12,3 @@ copy /y sw.js android\app\src\main\assets\
 copy /y icon-192.png android\app\src\main\assets\
 copy /y icon-512.png android\app\src\main\assets\
 echo Assets synced successfully!
-pause

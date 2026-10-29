@@ -169,6 +169,60 @@ class SoundManager {
         } catch (e) {}
     }
 
+    playIceFreeze() {
+        if (this.muted || !this.ctx) return;
+        try {
+            // Crystalline high-frequency chime
+            const now = this.ctx.currentTime;
+            [1200, 1600, 2400].forEach((freq, idx) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.03);
+                gain.gain.setValueAtTime(this.volume * 0.25, now + idx * 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.03 + 0.18);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now + idx * 0.03);
+                osc.stop(now + idx * 0.03 + 0.2);
+            });
+        } catch (e) {}
+    }
+
+    playFireScorch() {
+        if (this.muted || !this.ctx) return;
+        try {
+            const bufferSize = Math.floor(this.ctx.sampleRate * 0.16);
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.4));
+            }
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1400, this.ctx.currentTime);
+
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(this.volume * 0.45, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.16);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            noise.start();
+        } catch (e) {}
+    }
+
+    playGasHiss() {
+        if (this.muted || !this.ctx) return;
+        try {
+            this.playTone(900, 1800, 0.14, 'sine', 0.2);
+        } catch (e) {}
+    }
+
     playBoom() {
         if (this.muted || !this.ctx) return;
         try {
@@ -195,6 +249,28 @@ class SoundManager {
             gain.connect(this.ctx.destination);
             osc.start(now);
             osc.stop(now + 0.18);
+        } catch (e) {}
+    }
+
+    playVictory() {
+        if (this.muted || !this.ctx) return;
+        try {
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            const now = this.ctx.currentTime;
+            notes.forEach((freq, idx) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+
+                gain.gain.setValueAtTime(this.volume * 0.5, now + idx * 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.12 + 0.45);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now + idx * 0.12);
+                osc.stop(now + idx * 0.12 + 0.48);
+            });
         } catch (e) {}
     }
 
