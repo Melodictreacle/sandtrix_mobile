@@ -8,17 +8,25 @@
  */
 
 class ParticleSystem {
-    constructor() {
+    constructor(app = null) {
+        this.app = app;
         this.sparks = [];
         this.floatingTexts = [];
         this.shakeIntensity = 0;
     }
 
+    isClassic() {
+        const app = this.app || window.sandtrixApp;
+        return !!(app && app.engine && app.engine.isClassicGrid());
+    }
+
     triggerShake(intensity = 6) {
+        if (this.isClassic()) return;
         this.shakeIntensity = Math.max(this.shakeIntensity, intensity);
     }
 
     addSparks(coords, colorHex, countPerGrain = 1) {
+        if (this.isClassic() || !coords) return;
         for (const pt of coords) {
             for (let i = 0; i < countPerGrain; i++) {
                 const angle = Math.random() * Math.PI * 2;
@@ -39,6 +47,7 @@ class ParticleSystem {
     }
 
     addSplash(pixelX, pixelY, colorHex = '#00D2D7', count = 20) {
+        if (this.isClassic()) return;
         for (let i = 0; i < count; i++) {
             const angle = Math.PI + (Math.random() - 0.5) * Math.PI * 1.5;
             const speed = 2.0 + Math.random() * 4.0;
@@ -57,6 +66,7 @@ class ParticleSystem {
     }
 
     addAcidFizz(coords) {
+        if (this.isClassic() || !coords) return;
         for (const pt of coords) {
             this.sparks.push({
                 x: pt.x * 5 + Math.random() * 5,
@@ -73,10 +83,12 @@ class ParticleSystem {
     }
 
     addIceShatter(coords) {
+        if (this.isClassic()) return;
         this.addSparks(coords, '#99E6FF', 2);
     }
 
     addFireBurst(coords) {
+        if (this.isClassic()) return;
         this.addSparks(coords, '#FF4500', 2);
     }
 
@@ -115,7 +127,7 @@ class ParticleSystem {
         }
 
         let shakeX = 0, shakeY = 0;
-        if (this.shakeIntensity > 0.1) {
+        if (!this.isClassic() && this.shakeIntensity > 0.1) {
             shakeX = (Math.random() * 2 - 1) * this.shakeIntensity;
             shakeY = (Math.random() * 2 - 1) * this.shakeIntensity;
             this.shakeIntensity *= 0.88;
@@ -127,14 +139,16 @@ class ParticleSystem {
     }
 
     draw(ctx) {
-        for (const p of this.sparks) {
-            ctx.save();
-            ctx.globalAlpha = p.alpha;
-            ctx.fillStyle = p.color;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
+        if (!this.isClassic()) {
+            for (const p of this.sparks) {
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
         }
 
         for (const t of this.floatingTexts) {
@@ -153,10 +167,11 @@ class ParticleSystem {
 
 class SandtrixApp {
     constructor() {
+        window.sandtrixApp = this;
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.sound = new SoundManager();
-        this.particles = new ParticleSystem();
+        this.particles = new ParticleSystem(this);
 
         // 80 columns x 140 rows * 5px scale = 400 x 700 px
         this.canvas.width = 400;
@@ -822,7 +837,9 @@ class SandtrixApp {
         const dropEv = this.engine.hardDrop();
         if (dropEv) {
             this.sound.playDrop();
-            this.particles.triggerShake(9);
+            if (!this.engine.isClassicGrid()) {
+                this.particles.triggerShake(9);
+            }
             if (navigator.vibrate) navigator.vibrate(40);
             this.handleTickEvents(dropEv);
         }
@@ -920,7 +937,9 @@ class SandtrixApp {
             const ev = this.engine.hardDrop();
             if (ev) {
                 this.sound.playDrop();
-                this.particles.triggerShake(7);
+                if (!this.engine.isClassicGrid()) {
+                    this.particles.triggerShake(7);
+                }
                 if (navigator.vibrate) navigator.vibrate(30);
                 this.handleTickEvents(ev);
             }
@@ -1009,7 +1028,9 @@ class SandtrixApp {
                     const ev = this.engine.hardDrop();
                     if (ev) {
                         this.sound.playDrop();
-                        this.particles.triggerShake(7);
+                        if (!this.engine.isClassicGrid()) {
+                            this.particles.triggerShake(7);
+                        }
                         this.handleTickEvents(ev);
                     }
                     e.preventDefault();
@@ -1045,9 +1066,11 @@ class SandtrixApp {
         // Line clears & special element clears
         if (ev.cleared) {
             this.sound.playClear(ev.combo || 1);
-            this.particles.triggerShake(ev.isTidalWave ? 9 : 4);
-            const colorHex = PALETTE[ev.color] || '#EB4B4B';
-            this.particles.addSparks(ev.coords, colorHex, 2);
+            if (!this.engine.isClassicGrid()) {
+                this.particles.triggerShake(ev.isTidalWave ? 9 : 4);
+                const colorHex = PALETTE[ev.color] || '#EB4B4B';
+                this.particles.addSparks(ev.coords, colorHex, 2);
+            }
 
             if (ev.isTidalWave) {
                 this.particles.addFloatingText(200, 270, 'TIDAL WAVE!', '#00D2D7', 22);
